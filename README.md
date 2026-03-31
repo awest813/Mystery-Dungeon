@@ -1,105 +1,172 @@
-# Mystery Dungeon
+![Build Status](https://github.com/Moguri/pman/workflows/Pipeline/badge.svg)
+[![](https://img.shields.io/github/license/Moguri/pman.svg)](https://choosealicense.com/licenses/mit/)
 
-A PMD-inspired turn-based roguelike built with [Panda3D](https://github.com/panda3d/panda3d).
-Explore procedurally generated dungeons, collect loot with randomised affixes, level up your
-character, manage a hunger/PP economy, and return to a growing town between runs.
 
-## Current Status
+# Panda3D Manager
+pman is a Python package to help bootstrap and manage [Panda3D](https://github.com/panda3d/panda3d) applications.
 
-**Phase 7 – Procedural Loot & Enchantment** is complete.
-See [PLAN.md](PLAN.md) for the full roadmap.
+## Features
 
-### Implemented Features
+* Project quick-start
+* Automatic asset conversion
+* Automatically adds export directory to the model path
+* Convenient CLI for running and testing applications
+* Plugin system for expanding functionality
 
-| Phase | Feature area |
-|-------|-------------|
-| 1 | Core Panda3D project, tilemap rendering, player movement, enemy AI placeholder |
-| 2 | Procedural room-and-corridor generation, themed floors (Cave / Ice / Fire), item tiles, stairs |
-| 3 | Hunger system, gold drops, XP accumulation, JSON save/load |
-| 4 | Turn-based combat, enemy AI (chase/attack), floor-scaling enemy stats, spawn system |
-| 5 | Smooth camera, hop animation, message log, HUD colour coding, respawn flow |
-| 6 | Items (food/potions/weapons/orbs/keys), level-up system, PMD-style 4-slot skill/PP system, status effects, 8 enemy types + dark\_knight boss, traps/water/lava, boss floors every 5 floors |
-| 7 | Rarity tiers (Common → Legendary / Cursed), 13-affix system, legendary uniques, item identification, LootGenerator, material drops, Town Forge enchanting/upgrading, item inspection overlay |
+## Installation
 
-### Key Mechanics
-
-- **Procedural dungeons** — room-and-corridor layouts, up to 12 rooms, three visual themes
-- **Turn-based combat** — player acts, then every living enemy takes a turn
-- **Skills & PP** — 4 skill slots (Slash, Headbutt, Ember, Ice Shard, Thunder, Shadow Claw, Giga Impact, Heal, Sleep Powder, Toxic); PP restored on returning to town
-- **Status effects** — poisoned, burned, confused, paralyzed, asleep
-- **Loot system** — weighted per-floor tables; weapons carry rarity tiers and Diablo-style affixes; mystery names revealed by use or Identify Scroll
-- **Town Forge** — spend materials farmed from enemies to enchant or upgrade your equipped weapon
-- **Save/load** — inventory, equipped weapon, skills, PP, materials, and identified items all persist via JSON
-
-## Requirements
-
-- Python 3.9+
-- [Panda3D](https://www.panda3d.org/)
-- panda3d-gltf
-- panda3d-simplepbr
-- tomli
-- pman
-
-Install dependencies:
+Use `pip` to install the `panda3d-pman` package:
 
 ```bash
-pip install -r requirements.txt
+pip install panda3d-pman
 ```
 
-## Running
+## Usage
+
+Quick start a project with `pman create`.
+If you already have a directory for your project:
 
 ```bash
-python main.py
+cd my_awesome_project
+pman create .
 ```
 
-## Controls
+`pman` can also create the directory for you:
 
-| Key | Action |
-|-----|--------|
-| W / A / S / D | Move |
-| Space | Wait (skip turn) |
-| 1 – 4 | Use skill in slot |
-| F | Use first inventory item |
-| Z | Drop first inventory item |
-| I | Inspect first inventory item |
-| E | Save / Forge (in town) · Debug stats (in dungeon) |
-
-## Project Structure
-
-```
-main.py              Entry point
-game/
-  app.py             Main application, input handling, state machine
-  save_manager.py    JSON save/load
-entities/
-  player.py          Player stats, inventory, skills
-  enemy.py           Enemy types, AI behaviour
-  items.py           Item definitions, rarity/affix system, LootGenerator
-  skills.py          Skill definitions and PP system
-  status_effects.py  Status effect logic
-  entity_base.py     Shared entity base class
-systems/
-  turn_system.py     Turn resolution, combat, trap/tile effects
-  spawn_system.py    Enemy and item placement
-world/
-  dungeon_generator.py  Procedural room-and-corridor generation
-  tilemap.py            Tilemap rendering and theme application
-ui/
-  hud.py             In-game HUD (HP, hunger, skills, XP, status)
-  item_screen.py     Item inspection overlay
-tests/               Unit tests (48 tests across loot, config, and core systems)
+```bash
+pman create my_awesome_project
 ```
 
-## Roadmap
+In addition to the `create` command, `pman` has the following commands:
 
-Planned phases (see [PLAN.md](PLAN.md) for full detail):
+* update - re-run project creation logic on the project directory
+* help - display usage information
+* build - convert all files in the assets directory and place them in the export directory
+* run - run the application by calling `python` with the main file
+* test - run tests (shortcut for `python setup.py test`)
+* dist - create distributable forms of Panda3D applications (requires Panda3D 1.10+)
+* clean - remove built files
 
-- **Phase 8** – Town building via dungeon materials (Forge upgrades, Herbalist, Inn, Shrine, Guild Hall)
-- **Phase 9** – Crafting, cooking, farming, and a daily/seasonal life-sim cycle
-- **Phase 10** – Romanceable companions with support-rank system
-- **Phase 11** – Monster collecting, Ranch, and evolution system
-- **Phase 12** – Infinite dungeon mode, New Game+, final boss arc, multiplayer stub
+## Configuration
+
+`pman` will look for any of the following files in the project root:
+* pyproject.toml
+* .pman
+* .pman.user
+
+This configuration uses [TOML](https://github.com/toml-lang/toml) for markup.
+The `.pman` or `pyproject.toml` configuration file is project-wide and should be checked in under version control.
+
+Another, per-user configuration file also exists at the project root as `.pman.user`.
+This configuration file stores user settings and should *not* be checked into version control. 
+
+Settings in `.pman.user` take precedence over settings in `.pman` and both take precedence over `pyproject.toml`.
+If a setting is not defined in a config file, a default value will be used.
+
+When storing settings in `pyproject.toml`, section names should be pre-pended with `tool.pman.`.
+For example, `general` options would be under `tool.pman.general`.
+
+### General Options
+Section name: `general`
+
+|option|default|description|
+|---|---|---|
+|name|`"Game"`|The project name. For now this is only used for naming the built application in the default `setup.py`.|
+|plugins|`["DefaultPlugins"]`|A list of plugins to load and use. `"DefaultPlugins"` is expanded to the current default plugins, which makes it easier to enable additional plugins.|
+
+### Build Options
+Section name: `build`
+
+|option|default|description|
+|---|---|---|
+|asset_dir|`"assets/"`|The directory to look for assets to convert.|
+|export_dir|`".built_assets/"`|The directory to store built assets.|
+|ignore_patterns|`[]`|A case-insensitive list of patterns. Files matching any of these patterns will not be ignored during the build step. Pattern matching is done using [the fnmatch module](https://docs.python.org/3/library/fnmatch.html)
+
+### Run Options
+Section name: `run`
+
+|option|default|description|
+|---|---|---|
+|main_file|`"main.py"`|The entry-point to the application.|
+|extra_args|`""`|A string of extra arugments that are append to the invocation of `main_file`.|
+|auto_build|`true`|If `true`, automatically run builds as part of running the application (via `pman.shim.init`). This is disabled in deployed applications.|
+
+### Distribution Options
+Section name: `dist`
+
+|option|default|description|
+|---|---|---|
+|build_installers|`true`|Whether or not to build installers for built applications (i.e., run `bdist_apps`).|
+
+## Plugins
+
+To extend functionality, pman offers a plugin system.
+These plugins are found by pman using [entry points](https://packaging.python.org/specifications/entry-points/).
+
+### Default Plugins
+
+By default, pman loads the following plugins:
+
+* native2bam
+* blend2bam
+
+When specifying plugins, a special `DefaultPlugins` string is available that expands to pman's current default plugins.
+For example, to use `MyAwesomePlugin` in addition to pman's default plugins use:
+
+```toml
+[General]
+plugins = ['DefaultPlugins', 'MyAwesomePlugin']
+```
+
+### Built-in Plugins
+
+Below are plugins that ship with pman and their options.
+
+#### native2bam
+Support file formats: `egg`, `egg.pz`, `obj` (and `mtl`), `fbx`, `dae`, `ply`
+
+Loads the file into Panda and saves the result out to BAM. This relies on Panda's builtin file loading capabilities.
+
+##### Options
+None
+
+#### blend2bam
+Supported file formats: `blend`
+
+Converts Blender files to BAM files via [blend2bam](https://github.com/Moguri/blend2bam).
+
+##### Options
+Section name: `blend2bam`
+
+|option|default|description|
+|---|---|---|
+|material_mode|`"pbr"`|Specify whether to use the default Panda materials ("legacy") or Panda's new PBR material attributes ("pbr"). This is only used by the "gltf" pipeline; the "egg" always uses "legacy".|
+|physics_engine|`"builtin"`|The physics engine that collision solids should be built for. To export for Panda's builtin collision system, use "builtin." For Bullet, use "bullet." This is only used by the "gltf" pipeline; the "egg" pipeline always uses "builtin."|
+|pipeline|`"gltf"`|The backend that blend2bam uses to convert blend files. Go [here](https://github.com/Moguri/blend2bam#pipelines) for more information.|
+
+## Development
+
+Development relies on [uv](https://docs.astral.sh/uv/).
+
+### Running Tests
+
+Lint checks:
+```bash
+uv run ruff check
+```
+
+Unit tests:
+```bash
+uv run pytest
+```
+
+### Building Wheels
+
+```bash
+uv build
+```
 
 ## License
 
-[MIT](LICENSE.txt)
+[MIT](https://choosealicense.com/licenses/mit/)
