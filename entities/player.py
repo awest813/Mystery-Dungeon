@@ -43,6 +43,9 @@ class Player(Entity):
         self.materials = {}          # {material_key: count}
         self.identified_items = set()  # set of item_keys globally identified this save
 
+        # Phase 8 – Town buildings completed this save (building ids from data/buildings.json)
+        self.completed_buildings = set()
+
         # Phase 7 – Affix-derived combat stats (recalculated on equip/unequip)
         self.crit_chance = 0          # % chance to deal double damage
         self.life_steal_pct = 0       # % of damage dealt restored as HP

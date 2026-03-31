@@ -28,6 +28,8 @@ class SaveManager:
             # Phase 7
             "identified_items": sorted(player.identified_items),
             "materials": player.materials,
+            # Phase 8 – town construction
+            "completed_buildings": sorted(getattr(player, "completed_buildings", set())),
         }
         try:
             with open(self.filename, 'w') as f:
@@ -55,6 +57,9 @@ class SaveManager:
             # Phase 7: identification knowledge and materials
             player.identified_items = set(data.get("identified_items", []))
             player.materials = data.get("materials", {})
+            # Phase 8
+            cb = data.get("completed_buildings", [])
+            player.completed_buildings = set(cb) if isinstance(cb, list) else set()
 
             # Restore inventory (Phase 7: full dict round-trip)
             player.inventory = []

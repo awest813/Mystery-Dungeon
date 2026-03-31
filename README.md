@@ -6,7 +6,8 @@ character, manage a hunger/PP economy, and return to a growing town between runs
 
 ## Current Status
 
-**Phase 7 – Procedural Loot & Enchantment** is complete.
+**Phase 7 – Procedural Loot & Enchantment** is complete. **Phase 8 – Town building**
+(material nodes, Town Plot construction, forge tiers) is in progress.
 See [PLAN.md](PLAN.md) for the full roadmap.
 
 ### Implemented Features
@@ -20,6 +21,7 @@ See [PLAN.md](PLAN.md) for the full roadmap.
 | 5 | Smooth camera, hop animation, message log, HUD colour coding, respawn flow |
 | 6 | Items (food/potions/weapons/orbs/keys), level-up system, PMD-style 4-slot skill/PP system, status effects, 8 enemy types + dark\_knight boss, traps/water/lava, boss floors every 5 floors |
 | 7 | Rarity tiers (Common → Legendary / Cursed), 13-affix system, legendary uniques, item identification, LootGenerator, material drops, Town Forge enchanting/upgrading, item inspection overlay |
+| 8 (WIP) | Dungeon material nodes; Town Plot + `data/buildings.json` construction; `completed_buildings` in save; HUD materials line; Forge Lv2 lowers forge costs |
 
 ### Key Mechanics
 
@@ -84,10 +86,13 @@ systems/
 world/
   dungeon_generator.py  Procedural room-and-corridor generation
   tilemap.py            Tilemap rendering and theme application
+  town_builder.py       Phase 8: load buildings.json, construction helpers
+data/
+  buildings.json        Phase 8: building costs, prereqs, gold
 ui/
   hud.py             In-game HUD (HP, hunger, skills, XP, status)
   item_screen.py     Item inspection overlay
-tests/               Unit tests (48 tests across loot, config, and core systems)
+tests/               Unit tests (loot, town building, config, core systems)
 ```
 
 ## Roadmap

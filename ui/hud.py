@@ -43,6 +43,11 @@ class GameHUD:
             pos=(1.3, 0.73), scale=0.055,
             fg=(0.7, 0.9, 0.7, 1), align=TextNode.ARight, mayChange=True
         )
+        self.materials_text = OnscreenText(
+            text="",
+            pos=(1.3, 0.63), scale=0.042,
+            fg=(0.75, 0.85, 0.95, 1), align=TextNode.ARight, mayChange=True
+        )
 
         # --- Bottom center: Floor status ---
         self.floor_text = OnscreenText(
@@ -141,6 +146,17 @@ class GameHUD:
         inv_count = len(player.inventory)
         self.inv_text.setText(f"Bag: {inv_count}/{player.max_inventory}")
 
+        # Phase 8 – compact material line (town + dungeon)
+        mats = getattr(player, "materials", {}) or {}
+        nz = [(k, v) for k, v in sorted(mats.items()) if v > 0]
+        if nz:
+            short = ", ".join(f"{v}×{k.replace('_', ' ')[:4]}" for k, v in nz[:5])
+            if len(nz) > 5:
+                short += "…"
+            self.materials_text.setText(f"Mats: {short}")
+        else:
+            self.materials_text.setText("Mats: —")
+
         # Skill bar (PMD 4-slot style)
         sel_idx = getattr(player, 'selected_skill_idx', 0)
         skills = getattr(player, 'skills', [])
@@ -174,7 +190,7 @@ class GameHUD:
 
     def hide(self):
         for t in [self.hp_text, self.hunger_text, self.level_text, self.status_text,
-                  self.gold_text, self.weapon_text, self.inv_text,
+                  self.gold_text, self.weapon_text, self.inv_text, self.materials_text,
                   self.floor_text, self.log_text]:
             t.hide()
         for sl in self.skill_labels:
@@ -182,7 +198,7 @@ class GameHUD:
 
     def show(self):
         for t in [self.hp_text, self.hunger_text, self.level_text, self.status_text,
-                  self.gold_text, self.weapon_text, self.inv_text,
+                  self.gold_text, self.weapon_text, self.inv_text, self.materials_text,
                   self.floor_text, self.log_text]:
             t.show()
         for sl in self.skill_labels:
