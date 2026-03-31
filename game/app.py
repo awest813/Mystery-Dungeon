@@ -7,11 +7,12 @@ from world.tilemap import TileMap
 from world.dungeon_generator import DungeonGenerator
 from entities.player import Player
 from entities.enemy import Enemy
-from entities.items import Item, random_item_for_floor
+from entities.items import random_item_for_floor, LootGenerator, get_weapon_affix_pool
 from systems.turn_system import TurnSystem
 from systems.spawn_system import SpawnSystem
 from game.save_manager import SaveManager
 from ui.hud import GameHUD
+from ui.item_screen import ItemScreen
 
 STATE_TOWN = 0
 STATE_DUNGEON = 1
@@ -33,6 +34,7 @@ class MysteryDungeonApp(ShowBase):
         self.generator = DungeonGenerator(30, 30)
         self.save_mgr = SaveManager()
         self.hud = GameHUD()
+        self.item_screen = ItemScreen()   # Phase 7: item inspection overlay
 
         # Actors
         self.player = Player(0, 0)
@@ -70,10 +72,11 @@ class MysteryDungeonApp(ShowBase):
         self.accept("3", self._input_skill, [2])
         self.accept("4", self._input_skill, [3])
 
-        # Inventory: F = use first item, Z = drop first item, E = print stats/save
+        # Inventory: F = use first item, Z = drop first item, E = print stats/save, I = inspect
         self.accept("f", self._input_use_item)
         self.accept("z", self._input_drop_item)
         self.accept("e", self._input_action)
+        self.accept("i", self._input_inspect_item)   # Phase 7: item inspection
 
         # Game loop
         self.taskMgr.add(self.update_game, "GameLoop")
@@ -112,13 +115,24 @@ class MysteryDungeonApp(ShowBase):
             for y in range(12, 18):
                 self.map.grid[x][y] = 1
         self.map.grid[15][17] = 2   # stairs to dungeon
+        # Phase 7: Forge tile at (13, 12) – distinct gold tile
+        self.map.grid[13][12] = 8   # TILE_FORGE (handled as floor + special interaction)
         self.map.setup_visuals()
+        # Tint the forge tile orange
+        forge_node = self.map.visual_nodes.get((13, 12))
+        if forge_node:
+            forge_node.setColor(0.9, 0.5, 0.1, 1)
 
         self.player.move_to(15, 14)
         self.player.hp = self.player.max_hp
         self.player.hunger = self.player.max_hunger
         self.player.cure_all_statuses()
         self.player.restore_skill_pp()
+
+        # Phase 7: Auto-identify all items when returning to town
+        newly_id = self.player.identify_inventory()
+        if newly_id:
+            self.hud.add_message(f"Identified: {', '.join(newly_id)}")
 
         for e in self.enemies:
             e.node.hide()
@@ -171,17 +185,25 @@ class MysteryDungeonApp(ShowBase):
     # ------------------------------------------------------------------ #
 
     def _resolve_tile_effects(self):
-        """Called after any player move. Handles pickups, traps, stairs."""
+        """Called after any player move. Handles pickups, traps, stairs, forge."""
         px, py = self.player.x, self.player.y
+
+        # Forge tile interaction (Phase 7) – show hint when standing on it
+        if self.game_state == STATE_TOWN and self.map.grid[px][py] == 8:
+            self.hud.add_message("Forge: Press E to enchant weapon or inspect materials.")
 
         # Item pickup
         if self.map.is_item(px, py):
+            # Phase 7: use LootGenerator for rarity + affixes
             item_key = random_item_for_floor(self.floor_level)
-            item = Item(item_key)
+            item = LootGenerator.generate(item_key, self.floor_level)
+            # Auto-identify if the player has seen this type before
+            if item.key in self.player.identified_items:
+                item.is_identified = True
             if self.player.pick_up_item(item):
-                self.hud.add_message(f"Picked up {item.display}!")
+                self.hud.add_message(f"Picked up {item.display_name}!")
             else:
-                self.hud.add_message(f"Bag full! Left {item.display} behind.")
+                self.hud.add_message(f"Bag full! Left {item.display_name} behind.")
             self.map.grid[px][py] = 1
             node = self.map.visual_nodes.get((px, py))
             if node:
@@ -287,21 +309,45 @@ class MysteryDungeonApp(ShowBase):
         effect = item.effect
         if effect == "reveal_map":
             # Visually reveal all floor tiles (Orb of Sight – PMD style)
+            self.player.identify_item(item)
             self.hud.add_message("Orb of Sight! Floor revealed.")
-            # (Visual reveal would require full minimap; log the info)
         elif effect == "confuse_enemies":
+            self.player.identify_item(item)
             for e in self.enemies:
                 if not e.is_dead:
                     e.apply_status("confused", self.hud.add_message)
         elif effect == "paralyze_enemies":
+            self.player.identify_item(item)
             for e in self.enemies:
                 if not e.is_dead:
                     e.apply_status("paralyzed", self.hud.add_message)
         elif effect == "escape_dungeon":
+            self.player.identify_item(item)
             self.hud.add_message("Escape Orb! Returning to town...")
             self.taskMgr.doMethodLater(0.8, lambda t: (self.enter_town(), t.done)[1],
                                        "escape_orb")
+        elif effect == "identify_item":
+            # Phase 7: Identify Scroll – identify first unidentified item
+            self._resolve_identify_scroll(inv_idx)
+            return
         self.player.inventory.pop(inv_idx)
+        self.hud.update(self.player, self.floor_level, self.game_state == STATE_TOWN)
+
+    def _resolve_identify_scroll(self, scroll_idx):
+        """Use an Identify Scroll to reveal the first unidentified inventory item."""
+        unidentified = [(i, item) for i, item in enumerate(self.player.inventory)
+                        if not item.is_identified and i != scroll_idx]
+        if not unidentified:
+            self.hud.add_message("All items are already identified!")
+            return
+        idx, target = unidentified[0]
+        self.player.identify_item(target)
+        self.hud.add_message(f"Identified: {target.display_name}")
+        if target.affixes:
+            self.hud.add_message(f"  Affixes: {', '.join(target.affix_descs())}")
+        # Pop the scroll; if it comes after the target, its index shifts down by one
+        actual_scroll_idx = scroll_idx - 1 if scroll_idx > idx else scroll_idx
+        self.player.inventory.pop(actual_scroll_idx)
         self.hud.update(self.player, self.floor_level, self.game_state == STATE_TOWN)
 
     def _input_drop_item(self):
@@ -310,20 +356,102 @@ class MysteryDungeonApp(ShowBase):
             return
         dropped = self.player.drop_item(0)
         if dropped:
-            self.hud.add_message(f"Dropped {dropped.display}.")
+            self.hud.add_message(f"Dropped {dropped.display_name}.")
             self.hud.update(self.player, self.floor_level, self.game_state == STATE_TOWN)
 
+    def _input_inspect_item(self):
+        """Phase 7: I key - toggle item inspection overlay for first inventory item."""
+        if self.item_screen.is_visible:
+            self.item_screen.hide()
+            return
+        if not self.player.inventory:
+            self.hud.add_message("Inventory is empty.")
+            return
+        self.item_screen.show(self.player.inventory[0])
+
     def _input_action(self):
-        """E key: save in town, print debug stats in dungeon."""
+        """E key: save/forge in town, print debug stats in dungeon."""
         if self.player.is_dead:
             self.enter_town()
             return
         if self.game_state == STATE_TOWN:
-            self.save_mgr.save_progress(self.player)
-            self.hud.add_message("Progress saved.")
+            # Phase 7: If standing on forge tile, show forge menu
+            if self.player.x == 13 and self.player.y == 12:
+                self._forge_action()
+            else:
+                self.save_mgr.save_progress(self.player)
+                self.hud.add_message("Progress saved.")
         else:
-            inv_str = ", ".join(i.display for i in self.player.inventory) or "empty"
+            inv_str = ", ".join(i.display_name for i in self.player.inventory) or "empty"
             self.hud.add_message(
                 f"Lv{self.player.level} HP:{int(self.player.hp)} ATK:{self.player.effective_attack}"
             )
             self.hud.add_message(f"Bag: {inv_str}")
+
+    # ------------------------------------------------------------------ #
+    #  Phase 7 – Town Forge                                                #
+    # ------------------------------------------------------------------ #
+
+    # Forge enchant costs (material_key -> count required)
+    _FORGE_ENCHANT_COST = {"iron_ore": 5}
+    _FORGE_UPGRADE_COST = {"iron_ore": 3, "dark_crystal": 1}
+
+    def _forge_action(self):
+        """
+        Simple forge interaction at the town forge tile.
+        First call shows the menu; second call (while at forge) performs the action.
+        """
+        wpn = self.player.equipped_weapon
+        mats_str = self.player.materials_summary()
+        self.hud.add_message(f"Materials: {mats_str}")
+
+        if wpn is None:
+            self.hud.add_message("Forge: Equip a weapon first.")
+            return
+
+        can_enchant = self.player.has_materials(self._FORGE_ENCHANT_COST)
+        can_upgrade = (wpn.affixes and
+                       self.player.has_materials(self._FORGE_UPGRADE_COST))
+
+        if can_enchant and not wpn.affixes:
+            # Add a random non-cursed affix to the weapon using the public pool API
+            pool = get_weapon_affix_pool(cursed=False)
+            if pool:
+                tag = random.choice(pool)
+                affix = LootGenerator._roll_affix(tag)  # noqa: SLF001
+                wpn.affixes.append(affix)
+                if affix.stat == "attack_bonus_add":
+                    wpn.attack_bonus += affix.value
+                    self.player._weapon_bonus = wpn.attack_bonus  # noqa: SLF001
+                self.player.spend_materials(self._FORGE_ENCHANT_COST)
+                self.player._apply_weapon_affixes(wpn)  # noqa: SLF001
+                self.hud.add_message(
+                    f"Forged: {wpn.display_name} gained [{affix.desc}]!"
+                )
+                self.save_mgr.save_progress(self.player)
+                return
+
+        if can_upgrade and wpn.affixes:
+            # Upgrade first affix magnitude by 1-2
+            affix = wpn.affixes[0]
+            bonus = random.randint(1, 2)
+            old_val = affix.value
+            affix.value += bonus
+            # Reformat desc using the affix's own template
+            affix.desc = affix.desc.replace(str(old_val), str(affix.value), 1)
+            if affix.stat == "attack_bonus_add":
+                wpn.attack_bonus += bonus
+                self.player._weapon_bonus = wpn.attack_bonus  # noqa: SLF001
+            self.player.spend_materials(self._FORGE_UPGRADE_COST)
+            self.player._apply_weapon_affixes(wpn)  # noqa: SLF001
+            self.hud.add_message(
+                f"Upgraded: {affix.tag} {old_val} -> {affix.value}"
+            )
+            self.save_mgr.save_progress(self.player)
+            return
+
+        cost_str = ", ".join(f"{v}x {k}" for k, v in self._FORGE_ENCHANT_COST.items())
+        self.hud.add_message(
+            f"Forge: Need {cost_str} to enchant. "
+            f"(Have: {mats_str})"
+        )

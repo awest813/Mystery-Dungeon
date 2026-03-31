@@ -83,21 +83,55 @@ class TurnSystem:
     def _do_player_attack(self, enemy):
         """Resolve a basic player melee attack."""
         dmg = self.player.effective_attack
-        # Weapon may apply status on hit
+
+        # Crit chance (Phase 7 affix)
+        if self.player.crit_chance > 0 and random.randint(1, 100) <= self.player.crit_chance:
+            dmg *= 2
+            self.log_callback("Critical hit!")
+
+        # Weapon may apply status on hit (base weapon + independent affix effects)
         weapon = self.player.equipped_weapon
-        if weapon and weapon.status_on_hit:
-            enemy.apply_status(weapon.status_on_hit, self.log_callback)
+        if weapon:
+            if weapon.status_on_hit:
+                enemy.apply_status(weapon.status_on_hit, self.log_callback)
+            for affix in weapon.affixes:
+                if affix.status_on_hit:
+                    enemy.apply_status(affix.status_on_hit, self.log_callback)
+
+        # Volatile cursed affix: chance to warp enemy on hit
+        if (weapon and weapon.get_affix_stat("warp_on_hit")
+                and random.randint(1, 100) <= weapon.get_affix_stat("warp_on_hit")):
+            self.log_callback(f"{enemy.name} was warped!")
+            enemy.x = max(0, enemy.x + random.randint(-3, 3))
+            enemy.y = max(0, enemy.y + random.randint(-3, 3))
 
         enemy.take_damage(dmg)
         self.log_callback(f"You attack {enemy.name} for {dmg}!")
+
+        # Life steal (Phase 7 affix)
+        if self.player.life_steal_pct > 0:
+            steal = max(1, int(dmg * self.player.life_steal_pct / 100))
+            self.player.heal(steal)
+
         if enemy.is_dead:
             self.log_callback(f"Defeated {enemy.name}!")
             leveled = self.player.add_xp(enemy.xp_value)
             if leveled:
                 self.log_callback(f"Level UP! Now Lv.{self.player.level} | HP+5 ATK+1")
             gold = enemy.gold_drop()
+            # Gold bonus affix (Phase 7)
+            if self.player.gold_bonus_pct > 0:
+                gold = int(gold * (1 + self.player.gold_bonus_pct / 100))
             self.player.add_gold(gold)
             self.log_callback(f"+{gold} gold.")
+            # Material drops (Phase 7)
+            mats = enemy.get_material_drops()
+            if mats:
+                for mat_key, count in mats.items():
+                    self.player.add_material(mat_key, count)
+                mat_str = ", ".join(f"{c}x {k.replace('_',' ').title()}"
+                                    for k, c in mats.items())
+                self.log_callback(f"Drops: {mat_str}")
         return True
 
     def _do_player_skill(self, skill):
@@ -151,19 +185,37 @@ class TurnSystem:
             if leveled:
                 self.log_callback(f"Level UP! Now Lv.{self.player.level}!")
             gold = best_enemy.gold_drop()
+            if self.player.gold_bonus_pct > 0:
+                gold = int(gold * (1 + self.player.gold_bonus_pct / 100))
             self.player.add_gold(gold)
+            # Material drops (Phase 7)
+            mats = best_enemy.get_material_drops()
+            if mats:
+                for mat_key, count in mats.items():
+                    self.player.add_material(mat_key, count)
+                mat_str = ", ".join(f"{c}x {k.replace('_',' ').title()}"
+                                    for k, c in mats.items())
+                self.log_callback(f"Drops: {mat_str}")
 
         skill.use()
         return True
 
     def _end_player_turn(self):
         """Consume hunger, apply terrain effects, then run enemy turns."""
-        # Hunger drain
-        self.player.hunger -= 0.6
+        # Hunger drain (reduced by hunger_save_pct affix – Phase 7)
+        save_pct = getattr(self.player, 'hunger_save_pct', 0)
+        hunger_cost = 0.6 * (1.0 - save_pct / 100.0)
+        self.player.hunger -= hunger_cost
         if self.player.hunger <= 0:
             self.player.hunger = 0
             self.player.take_damage(1)
             self.log_callback("Starving! Took 1 HP damage.")
+
+        # Cursed weapon HP drain per turn (Phase 7)
+        drain = getattr(self.player, 'hp_drain_per_turn', 0)
+        if drain > 0:
+            self.player.take_damage(drain)
+            self.log_callback(f"Cursed weapon drains {drain} HP!")
 
         # Lava terrain damage (FF Tactics / Diablo hazard)
         if self.tilemap.is_lava(self.player.x, self.player.y):
@@ -233,6 +285,10 @@ class TurnSystem:
 
             elif action == "attack":
                 dmg = enemy.attack_power
+                # Damage reduction from guard affix (Phase 7)
+                reduce_pct = getattr(self.player, 'dmg_reduce_pct', 0)
+                if reduce_pct > 0:
+                    dmg = max(1, int(dmg * (1.0 - reduce_pct / 100.0)))
                 self.player.take_damage(dmg)
                 self.log_callback(f"{enemy.name} hits you for {dmg}!")
                 # Enemy status-on-hit

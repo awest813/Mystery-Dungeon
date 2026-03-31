@@ -102,6 +102,18 @@ FLOOR_ENEMY_POOLS = {
     11: ["fire_imp", "ice_wisp", "dark_knight"],
 }
 
+# Phase 7: material drops per enemy type {material_key: drop_chance}
+ENEMY_MATERIAL_DROPS = {
+    "slime":       [("slime_gel",    1.0)],
+    "bat":         [("bat_wing",     0.7)],
+    "goblin":      [("goblin_fang",  0.6), ("iron_ore",   0.3)],
+    "ghost":       [("moonstone",    0.4)],
+    "orc":         [("orc_hide",     0.6), ("iron_ore",   0.5)],
+    "fire_imp":    [("flame_shard",  0.5)],
+    "ice_wisp":    [("frost_jewel",  0.5)],
+    "dark_knight": [("dark_crystal", 0.8), ("iron_ore",   1.0), ("moonstone", 0.5)],
+}
+
 def get_enemy_pool(floor_level):
     """Return the enemy pool appropriate for a given floor."""
     best_key = 1
@@ -156,6 +168,17 @@ class Enemy(Entity):
     def gold_drop(self):
         lo, hi = self.gold_range
         return random.randint(lo, hi)
+
+    def get_material_drops(self):
+        """
+        Returns a dict {material_key: count} based on enemy type and random chance.
+        Phase 7 - feeds into the player's material inventory.
+        """
+        drops = {}
+        for mat_key, chance in ENEMY_MATERIAL_DROPS.get(self.enemy_type, []):
+            if random.random() < chance:
+                drops[mat_key] = drops.get(mat_key, 0) + 1
+        return drops
 
     def decide_action(self, player_x, player_y, occupants, tilemap=None):
         """

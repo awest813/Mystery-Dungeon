@@ -1,4 +1,5 @@
 from direct.gui.OnscreenText import OnscreenText
+from entities.items import RARITY_TIERS
 from panda3d.core import TextNode
 
 
@@ -70,7 +71,7 @@ class GameHUD:
 
         # --- Controls hint ---
         OnscreenText(
-            text="WASD:Move  Space:Wait  1-4:Skill  F:UseItem(slot0)  Z:Drop",
+            text="WASD:Move  Space:Wait  1-4:Skill  F:Use  Z:Drop  I:Inspect  E:Action",
             pos=(0, -0.997), scale=0.038,
             fg=(0.5, 0.5, 0.5, 1), align=TextNode.ACenter
         )
@@ -118,11 +119,23 @@ class GameHUD:
         # Gold
         self.gold_text.setText(f"GOLD: {int(player.gold)}")
 
-        # Equipped weapon
+        # Equipped weapon – Phase 7: show rarity colour and affix count
         wpn = getattr(player, 'equipped_weapon', None)
-        wpn_str = wpn.display if wpn else "none"
+        if wpn:
+            wpn_str = wpn.display_name if hasattr(wpn, 'display_name') else wpn.display
+            affix_count = len(getattr(wpn, 'affixes', []))
+            affix_tag = f" +{affix_count}" if affix_count else ""
+            cursed_tag = " !" if getattr(wpn, 'cursed', False) else ""
+            wpn_display = f"{wpn_str}{affix_tag}{cursed_tag}"
+            # Rarity colour (Phase 7)
+            rarity = getattr(wpn, 'rarity', 'common')
+            wpn_color = RARITY_TIERS.get(rarity, RARITY_TIERS["common"])["color"]
+        else:
+            wpn_display = "none"
+            wpn_color = (0.9, 0.7, 0.4, 1)
         atk_total = getattr(player, 'effective_attack', player.attack_power)
-        self.weapon_text.setText(f"ATK:{atk_total} [{wpn_str}]")
+        self.weapon_text.setText(f"ATK:{atk_total} [{wpn_display}]")
+        self.weapon_text.setFg(wpn_color)
 
         # Inventory count
         inv_count = len(player.inventory)
