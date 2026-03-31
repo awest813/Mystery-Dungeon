@@ -32,45 +32,29 @@ enemy walkability fix, HUD color coding, respawn flow.
 
 ---
 
-## 🔜 Phase 7 – Procedural Loot & Enchantment System
+## ✅ Phase 7 – Procedural Loot & Enchantment System
 
-**Goal**: Every weapon, armor, and accessory found in the dungeon feels unique and
-worth examining. Inspired by Diablo 2 item affixes, PMD IQ items, and Chocobo Dungeon
-cursed/blessed mechanics.
+**Goal**: Every weapon found in the dungeon feels unique and worth examining.
+Inspired by Diablo 2 item affixes, PMD IQ items, and Chocobo Dungeon cursed/blessed mechanics.
 
-### Loot Rarity Tiers
-- **Common** (grey) – base stats only
-- **Uncommon** (green) – 1 prefix or suffix affix
-- **Rare** (blue) – 1–2 prefixes + 1–2 suffixes
-- **Legendary** (gold) – fixed unique name, 3–5 hand-crafted affixes, unique flavor text
-- **Cursed** (purple) – powerful stats but negative side effect (can't be unequipped until
-  curse-lifted at town shrine)
-
-### Affix System
-Each affix is a tag + magnitude rolled at generation time:
-
-| Category | Example Affixes |
-|----------|----------------|
-| Offensive | `+% ATK`, `chance to crit (2×)`, `element dmg (fire/ice/lightning)`, `life steal %` |
-| Defensive | `+max HP`, `damage reduction %`, `status resistance`, `reflect dmg on hit` |
-| Utility | `+hunger drain rate`, `auto-identify unidentified items`, `extra gold drop %` |
-| Cursed | `−HP per turn`, `confusion on move`, `random teleport on hit`, `item destruction` |
-
-### Item Identification (Choco Dungeon / NetHack)
-- Items spawned in dungeons are **unidentified** (e.g. "??? Sword", "Silver Potion")
-- Identified by: using them (risk!), Identify Scroll, or returning to town
-- IDs persist globally across runs (once you know a "Silver Potion" = Elixir, it stays known)
-
-### Enchantment at Town Forge
-- Spend **dungeon materials** (ore, crystals, monster drops) to enchant gear
-- Options: add affix, upgrade existing affix magnitude, remove curse, reroll affixes
-- Enchantment consumes materials and gold; higher tiers require rarer materials
-
-### Implementation Notes
-- `entities/items.py`: add `LootGenerator` class, `ItemAffix` dataclass, rarity weights
-- `entities/items.py`: `Item.generate(floor_level, forced_rarity=None)` factory
-- `game/save_manager.py`: persist item identification knowledge dict
-- `ui/item_screen.py`: new item inspection overlay (name, affixes, flavor text)
+### Implemented
+- **Rarity tiers**: Common (grey), Uncommon (green), Rare (blue), Legendary (gold), Cursed (purple)
+- **Affix system**: 13 affix tags across 4 categories (offensive, defensive, utility, cursed)
+  - Offensive: `keen` (+ATK), `crit` (crit chance), `fiery` (fire dmg + burn), `freezing` (ice dmg + paralyze), `leeching` (life steal %)
+  - Defensive: `hardy` (+max HP), `guard` (dmg reduction %), `resist` (status duration -N turns)
+  - Utility: `thrifty` (-hunger drain %), `finder` (+gold drop %)
+  - Cursed: `leech` (-HP/turn), `fumble` (+confuse chance on move), `volatile` (+warp on hit %)
+- **Legendary uniques**: 4 hand-crafted weapons with fixed names, flavour text, and affixes
+- **Item identification**: mystery names for non-food items; identified by use, Identify Scroll, or returning to town; persists globally across sessions
+- **`LootGenerator.generate()`**: factory with floor-scaled rarity weights
+- **Material drops**: 8 enemy types drop materials (slime gel, bat wing, goblin fang, etc.)
+- **Player material inventory**: `add_material`, `has_materials`, `spend_materials`, `materials_summary`
+- **Town Forge** (tile 8): stand on it + press E to enchant/upgrade equipped weapon using materials
+- **Affix effects in combat**: crit, life steal, dmg reduce, hunger save, hp drain, warp on hit, status on hit
+- **HUD rarity colour**: equipped weapon slot coloured by rarity tier
+- **`ui/item_screen.py`**: item inspection overlay (I key) showing rarity, affixes, flavour text
+- **Save/load**: rarity + affixes round-trip via `Item.to_dict/from_dict`; `identified_items` + `materials` persisted
+- **48 unit tests** covering all major systems
 
 ---
 

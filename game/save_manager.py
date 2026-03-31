@@ -9,9 +9,9 @@ class SaveManager:
         self.filename = filename
 
     def save_progress(self, player):
-        """Persists meta-progression stats, inventory, and skills to disk."""
-        inv_data = [item.key for item in player.inventory]
-        equipped = player.equipped_weapon.key if player.equipped_weapon else None
+        """Persists meta-progression stats, inventory, skills, and Phase 7 data."""
+        inv_data = [item.to_dict() for item in player.inventory]
+        equipped = player.equipped_weapon.to_dict() if player.equipped_weapon else None
         skill_data = [{"key": s.key, "pp": s.pp} for s in player.skills]
 
         data = {
@@ -25,6 +25,9 @@ class SaveManager:
             "equipped_weapon": equipped,
             "skills": skill_data,
             "selected_skill_idx": player.selected_skill_idx,
+            # Phase 7
+            "identified_items": sorted(player.identified_items),
+            "materials": player.materials,
         }
         try:
             with open(self.filename, 'w') as f:
@@ -49,21 +52,38 @@ class SaveManager:
             player.attack_power = data.get("attack_power", 5)
             player.hp = player.max_hp
 
-            # Restore inventory
+            # Phase 7: identification knowledge and materials
+            player.identified_items = set(data.get("identified_items", []))
+            player.materials = data.get("materials", {})
+
+            # Restore inventory (Phase 7: full dict round-trip)
             player.inventory = []
-            for key in data.get("inventory", []):
+            for item_data in data.get("inventory", []):
                 try:
-                    player.inventory.append(Item(key))
+                    if isinstance(item_data, dict):
+                        item = Item.from_dict(item_data)
+                    else:
+                        item = Item(item_data)   # legacy: plain key string
+                    # Auto-identify if type has been seen before
+                    if item.key in player.identified_items:
+                        item.is_identified = True
+                    player.inventory.append(item)
                 except Exception:
                     pass
 
             # Restore equipped weapon
-            eq_key = data.get("equipped_weapon")
-            if eq_key:
+            eq_data = data.get("equipped_weapon")
+            if eq_data:
                 try:
-                    wpn = Item(eq_key)
+                    if isinstance(eq_data, dict):
+                        wpn = Item.from_dict(eq_data)
+                    else:
+                        wpn = Item(eq_data)   # legacy
+                    if wpn.key in player.identified_items:
+                        wpn.is_identified = True
                     player.equipped_weapon = wpn
-                    player._weapon_bonus = wpn.attack_bonus
+                    player._weapon_bonus = wpn.attack_bonus  # noqa: SLF001
+                    player._apply_weapon_affixes(wpn)  # noqa: SLF001
                 except Exception:
                     pass
 
