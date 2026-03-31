@@ -9,6 +9,9 @@ TILE_TRAP    = 4   # Hidden traps (Choco Dungeon / DQ-style)
 TILE_WATER   = 5   # Water – slows movement, DQ Rocket Slime style
 TILE_LAVA    = 6   # Lava  – burns when stepped on
 TILE_SEALED  = 7   # Sealed room door – needs a key (Choco Dungeon)
+TILE_FORGE   = 8   # Town forge (must match game/app.py)
+TILE_MATERIAL_NODE = 9   # Phase 8: ore vein / crystal – yields materials on step
+TILE_TOWN_PLOT = 10      # Phase 8: town construction site (north of square)
 
 TRAP_TYPES = ["spike", "sleep", "warp", "poison", "hunger"]
 
@@ -64,6 +67,9 @@ class DungeonGenerator:
 
         # Add traps (hidden, revealed on step)
         self._place_traps(grid, floor_level)
+
+        # Phase 8: breakable resource nodes on walkable floor
+        self._place_material_nodes(grid, floor_level)
 
         return grid, self.rooms
 
@@ -156,3 +162,20 @@ class DungeonGenerator:
                 if grid[x][y] == TILE_FLOOR:
                     if random.random() < trap_density:
                         grid[x][y] = TILE_TRAP
+
+    def _place_material_nodes(self, grid, floor_level):
+        """Scatter a few material nodes (ore/crystal) that grant loot when stepped on."""
+        count = 1 + min(3, floor_level // 4)
+        candidates = [
+            (x, y)
+            for x in range(self.width)
+            for y in range(self.height)
+            if grid[x][y] == TILE_FLOOR
+        ]
+        random.shuffle(candidates)
+        placed = 0
+        for x, y in candidates:
+            if placed >= count:
+                break
+            grid[x][y] = TILE_MATERIAL_NODE
+            placed += 1

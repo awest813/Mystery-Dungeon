@@ -1,0 +1,52 @@
+{
+  "buildings": [
+    {
+      "id": "forge_lv1",
+      "name": "Forge (Lv1)",
+      "description": "Formalize the town forge — unlocks advanced forge upgrades.",
+      "requires": [],
+      "materials": { "iron_ore": 8, "slime_gel": 5 },
+      "gold": 0
+    },
+    {
+      "id": "forge_lv2",
+      "name": "Forge (Lv2)",
+      "description": "Elemental infusions (use with the forge tile).",
+      "requires": ["forge_lv1"],
+      "materials": { "iron_ore": 15, "flame_shard": 5 },
+      "gold": 100
+    },
+    {
+      "id": "herbalist_hut",
+      "name": "Herbalist Hut",
+      "description": "Herb stock between runs (expanded in Phase 9).",
+      "requires": [],
+      "materials": { "bat_wing": 6, "goblin_fang": 4 },
+      "gold": 50
+    },
+    {
+      "id": "inn",
+      "name": "Inn",
+      "description": "Rest services and future companions.",
+      "requires": [],
+      "materials": { "bat_wing": 8, "iron_ore": 5 },
+      "gold": 80
+    },
+    {
+      "id": "shrine",
+      "name": "Shrine",
+      "description": "Curse relief and blessings (planned).",
+      "requires": [],
+      "materials": { "moonstone": 5, "frost_jewel": 3 },
+      "gold": 120
+    },
+    {
+      "id": "guild_hall",
+      "name": "Guild Hall",
+      "description": "Bounties and daily challenges (planned).",
+      "requires": [],
+      "materials": { "iron_ore": 15, "dark_crystal": 5 },
+      "gold": 200
+    }
+  ]
+}

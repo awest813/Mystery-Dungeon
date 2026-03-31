@@ -4,7 +4,8 @@ from direct.showbase.ShowBase import ShowBase
 import simplepbr
 
 from world.tilemap import TileMap
-from world.dungeon_generator import DungeonGenerator
+from world.dungeon_generator import DungeonGenerator, TILE_FORGE, TILE_TOWN_PLOT
+from world import town_builder
 from entities.player import Player
 from entities.enemy import Enemy
 from entities.items import random_item_for_floor, LootGenerator, get_weapon_affix_pool
@@ -35,6 +36,10 @@ class MysteryDungeonApp(ShowBase):
         self.save_mgr = SaveManager()
         self.hud = GameHUD()
         self.item_screen = ItemScreen()   # Phase 7: item inspection overlay
+
+        # Phase 8 – town construction (data/buildings.json)
+        self._building_defs = town_builder.load_building_definitions()
+        self._town_build_index = 0
 
         # Actors
         self.player = Player(0, 0)
@@ -110,15 +115,21 @@ class MysteryDungeonApp(ShowBase):
         self.floor_level = 0
         self.map.apply_theme("TOWN")
 
-        self.map.grid = [[0 for _ in range(30)] for _ in range(30)]
+        w, h = self.map.width, self.map.height
+        self.map.grid = [[0 for _ in range(h)] for _ in range(w)]
         for x in range(12, 18):
             for y in range(12, 18):
                 self.map.grid[x][y] = 1
         self.map.grid[15][17] = 2   # stairs to dungeon
-        # Phase 7: Forge tile at (13, 12) – distinct gold tile
-        self.map.grid[13][12] = 8   # TILE_FORGE (handled as floor + special interaction)
+        # Phase 7/8: Forge uses TILE_FORGE; north path + town plot for building
+        self.map.grid[13][12] = TILE_FORGE
+        town_builder.ensure_town_walkable_for_buildings(self.map.grid, w, h)
+        self.map.grid[15][20] = TILE_TOWN_PLOT
+        town_builder.apply_completed_building_tiles(
+            self.map.grid, self.player.completed_buildings
+        )
         self.map.setup_visuals()
-        # Tint the forge tile orange
+        # Tint the forge tile orange (visual pop over theme default)
         forge_node = self.map.visual_nodes.get((13, 12))
         if forge_node:
             forge_node.setColor(0.9, 0.5, 0.1, 1)
@@ -188,9 +199,17 @@ class MysteryDungeonApp(ShowBase):
         """Called after any player move. Handles pickups, traps, stairs, forge."""
         px, py = self.player.x, self.player.y
 
-        # Forge tile interaction (Phase 7) – show hint when standing on it
-        if self.game_state == STATE_TOWN and self.map.grid[px][py] == 8:
+        # Forge tile (Phase 7/8)
+        if self.game_state == STATE_TOWN and self.map.is_forge(px, py):
             self.hud.add_message("Forge: Press E to enchant weapon or inspect materials.")
+
+        # Town plot (Phase 8)
+        if self.game_state == STATE_TOWN and self.map.is_town_plot(px, py):
+            self.hud.add_message("Town Plot: Press E to build (cycles blueprints).")
+
+        # Material node (Phase 8) – dungeon only
+        if self.game_state == STATE_DUNGEON and self.map.is_material_node(px, py):
+            self._harvest_material_node(px, py)
 
         # Item pickup
         if self.map.is_item(px, py):
@@ -375,9 +394,10 @@ class MysteryDungeonApp(ShowBase):
             self.enter_town()
             return
         if self.game_state == STATE_TOWN:
-            # Phase 7: If standing on forge tile, show forge menu
-            if self.player.x == 13 and self.player.y == 12:
+            if self.map.is_forge(self.player.x, self.player.y):
                 self._forge_action()
+            elif self.map.is_town_plot(self.player.x, self.player.y):
+                self._town_plot_action()
             else:
                 self.save_mgr.save_progress(self.player)
                 self.hud.add_message("Progress saved.")
@@ -392,9 +412,71 @@ class MysteryDungeonApp(ShowBase):
     #  Phase 7 – Town Forge                                                #
     # ------------------------------------------------------------------ #
 
-    # Forge enchant costs (material_key -> count required)
+    def _harvest_material_node(self, px, py):
+        """Convert a material-node tile to floor and grant themed loot."""
+        theme = self.map.current_theme
+        tables = {
+            "ICE": [("frost_jewel", 3), ("bat_wing", 2), ("moonstone", 1)],
+            "FIRE": [("flame_shard", 3), ("iron_ore", 3), ("orc_hide", 2)],
+            "CAVE": [("iron_ore", 3), ("slime_gel", 3), ("goblin_fang", 2)],
+        }
+        keys, weights = zip(*tables.get(theme, tables["CAVE"]))
+        mat = random.choices(keys, weights=weights, k=1)[0]
+        amt = random.randint(1, 2)
+        self.player.add_material(mat, amt)
+        self.map.grid[px][py] = 1
+        node = self.map.visual_nodes.get((px, py))
+        if node:
+            t = TileMap.THEMES[self.map.current_theme]
+            node.setColor(*t["alt"] if (px + py) % 2 == 0 else t["floor"])
+        self.hud.add_message(
+            f"Gathered {amt}× {mat.replace('_', ' ').title()} from the deposit."
+        )
+
+    def _town_plot_action(self):
+        """Cycle buildable structures; spend mats + gold when affordable."""
+        pending = [b for b in self._building_defs if b.id not in self.player.completed_buildings]
+        if not pending:
+            self.hud.add_message("Town Plot: Everything in this blueprint book is built!")
+            return
+        self._town_build_index %= len(pending)
+        target = pending[self._town_build_index]
+        ok, reason = town_builder.can_build(
+            target, self.player, self.player.completed_buildings
+        )
+        mats_line = ", ".join(f"{v}× {k.replace('_', ' ')}" for k, v in sorted(target.materials.items()))
+        gold_line = f" + {target.gold}g" if target.gold else ""
+        self.hud.add_message(
+            f"Blueprint [{self._town_build_index + 1}/{len(pending)}]: {target.name}"
+        )
+        self.hud.add_message(f"  Cost: {mats_line}{gold_line}")
+        if not ok:
+            self.hud.add_message(f"  ({reason}) Press E for next blueprint.")
+            self._town_build_index += 1
+            return
+        success, msg = town_builder.try_build(
+            target, self.player, self.player.completed_buildings
+        )
+        if success:
+            self.hud.add_message(msg)
+            town_builder.apply_completed_building_tiles(
+                self.map.grid, self.player.completed_buildings
+            )
+            self.map.setup_visuals()
+            forge_node = self.map.visual_nodes.get((13, 12))
+            if forge_node:
+                forge_node.setColor(0.9, 0.5, 0.1, 1)
+            self._town_build_index = 0
+            self.save_mgr.save_progress(self.player)
+            return
+        self.hud.add_message(msg)
+        self._town_build_index += 1
+
+    # Forge costs — Phase 8 Forge Lv2 lowers material needs slightly
     _FORGE_ENCHANT_COST = {"iron_ore": 5}
+    _FORGE_ENCHANT_COST_LV2 = {"iron_ore": 3, "flame_shard": 2}
     _FORGE_UPGRADE_COST = {"iron_ore": 3, "dark_crystal": 1}
+    _FORGE_UPGRADE_COST_LV2 = {"iron_ore": 2, "dark_crystal": 1}
 
     def _forge_action(self):
         """
@@ -404,14 +486,26 @@ class MysteryDungeonApp(ShowBase):
         wpn = self.player.equipped_weapon
         mats_str = self.player.materials_summary()
         self.hud.add_message(f"Materials: {mats_str}")
+        if "forge_lv2" in self.player.completed_buildings:
+            self.hud.add_message("Forge Lv2 active — improved material efficiency.")
 
         if wpn is None:
             self.hud.add_message("Forge: Equip a weapon first.")
             return
 
-        can_enchant = self.player.has_materials(self._FORGE_ENCHANT_COST)
-        can_upgrade = (wpn.affixes and
-                       self.player.has_materials(self._FORGE_UPGRADE_COST))
+        enc_cost = (
+            self._FORGE_ENCHANT_COST_LV2
+            if "forge_lv2" in self.player.completed_buildings
+            else self._FORGE_ENCHANT_COST
+        )
+        up_cost = (
+            self._FORGE_UPGRADE_COST_LV2
+            if "forge_lv2" in self.player.completed_buildings
+            else self._FORGE_UPGRADE_COST
+        )
+
+        can_enchant = self.player.has_materials(enc_cost)
+        can_upgrade = wpn.affixes and self.player.has_materials(up_cost)
 
         if can_enchant and not wpn.affixes:
             # Add a random non-cursed affix to the weapon using the public pool API
@@ -423,7 +517,7 @@ class MysteryDungeonApp(ShowBase):
                 if affix.stat == "attack_bonus_add":
                     wpn.attack_bonus += affix.value
                     self.player._weapon_bonus = wpn.attack_bonus  # noqa: SLF001
-                self.player.spend_materials(self._FORGE_ENCHANT_COST)
+                self.player.spend_materials(enc_cost)
                 self.player._apply_weapon_affixes(wpn)  # noqa: SLF001
                 self.hud.add_message(
                     f"Forged: {wpn.display_name} gained [{affix.desc}]!"
@@ -442,7 +536,7 @@ class MysteryDungeonApp(ShowBase):
             if affix.stat == "attack_bonus_add":
                 wpn.attack_bonus += bonus
                 self.player._weapon_bonus = wpn.attack_bonus  # noqa: SLF001
-            self.player.spend_materials(self._FORGE_UPGRADE_COST)
+            self.player.spend_materials(up_cost)
             self.player._apply_weapon_affixes(wpn)  # noqa: SLF001
             self.hud.add_message(
                 f"Upgraded: {affix.tag} {old_val} -> {affix.value}"
@@ -450,7 +544,7 @@ class MysteryDungeonApp(ShowBase):
             self.save_mgr.save_progress(self.player)
             return
 
-        cost_str = ", ".join(f"{v}x {k}" for k, v in self._FORGE_ENCHANT_COST.items())
+        cost_str = ", ".join(f"{v}x {k}" for k, v in enc_cost.items())
         self.hud.add_message(
             f"Forge: Need {cost_str} to enchant. "
             f"(Have: {mats_str})"

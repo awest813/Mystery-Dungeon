@@ -1,7 +1,8 @@
 from panda3d.core import NodePath, CardMaker
 from world.dungeon_generator import (
     TILE_WALL, TILE_FLOOR, TILE_STAIRS, TILE_ITEM,
-    TILE_TRAP, TILE_WATER, TILE_LAVA, TILE_SEALED
+    TILE_TRAP, TILE_WATER, TILE_LAVA, TILE_SEALED,
+    TILE_FORGE, TILE_MATERIAL_NODE, TILE_TOWN_PLOT,
 )
 
 
@@ -82,6 +83,15 @@ class TileMap:
     def is_sealed(self, x, y):
         return self.get_tile(x, y) == TILE_SEALED
 
+    def is_forge(self, x, y):
+        return self.get_tile(x, y) == TILE_FORGE
+
+    def is_material_node(self, x, y):
+        return self.get_tile(x, y) == TILE_MATERIAL_NODE
+
+    def is_town_plot(self, x, y):
+        return self.get_tile(x, y) == TILE_TOWN_PLOT
+
     def reveal_trap(self, x, y):
         """Called when a trap is stepped on – show it visually."""
         self.revealed_traps.add((x, y))
@@ -135,6 +145,12 @@ class TileMap:
                     node.setColor(*theme["lava"])
                 elif tile_type == TILE_SEALED:
                     node.setColor(0.5, 0.35, 0.1, 1)  # brown sealed door
+                elif tile_type == TILE_FORGE:
+                    node.setColor(0.9, 0.5, 0.1, 1)
+                elif tile_type == TILE_MATERIAL_NODE:
+                    node.setColor(0.55, 0.35, 0.65, 1)  # crystal / ore
+                elif tile_type == TILE_TOWN_PLOT:
+                    node.setColor(0.15, 0.45, 0.25, 1)  # construction plot
 
                 self.visual_nodes[(x, y)] = node
 

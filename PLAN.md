@@ -58,46 +58,46 @@ Inspired by Diablo 2 item affixes, PMD IQ items, and Chocobo Dungeon cursed/bles
 
 ---
 
-## 🔜 Phase 8 – Town Building Through Dungeon Materials
+## 🔄 Phase 8 – Town Building Through Dungeon Materials (in progress)
 
 **Goal**: The player's town grows visually and functionally as they bring back materials
 farmed in dungeons. Inspired by Recettear, Stardew Valley, and DQ Builders.
 
+### Implemented so far
+- **Material nodes** on dungeon floors (`TILE_MATERIAL_NODE`): step on purple deposits for
+  theme-weighted materials (Cave / Ice / Fire)
+- **Town Plot** north of the square: stand on the green tile and press **E** to cycle
+  blueprints; affordable builds spend materials + gold and persist in the save file
+- **`data/buildings.json`** + **`world/town_builder.py`**: definitions, prereqs,
+  `can_build` / `try_build`, small footprint tiles when certain buildings complete
+- **Forge Lv2** blueprint: when built, town forge enchant/upgrade costs are reduced
+- **HUD** line for non-zero materials; save field **`completed_buildings`**
+
 ### Material Farming
-- Enemies drop **materials** on death in addition to gold (e.g. Slime Gel, Goblin Fang,
-  Bat Wing, Orc Hide, Dark Crystal, Flame Shard, Frost Jewel)
-- Special "material nodes" on dungeon floors (breakable ore veins, crystal clusters)
-  that yield raw crafting resources when stepped on / interacted with
+- Enemies drop **materials** on death (Phase 7)
+- **Material nodes** (above) supplement enemy drops
 
 ### Town Buildings
-Each building unlocks new services. Buildings are constructed using materials + gold
-at the Town Plot (new area north of the existing town square).
+Long-term targets still include Ranch, Companion Quarters, and full service UIs. Current
+`data/buildings.json` uses only **existing** material keys.
 
-| Building | Materials Required | Service Unlocked |
-|----------|-------------------|-----------------|
-| **Forge** (Lv1) | 10× Stone, 5× Iron Ore | Basic enchanting, weapon repair |
-| **Forge** (Lv2) | +20× Steel, 5× Flame Shard | Elemental enchanting, forge legendary weapons |
-| **Herbalist Hut** | 8× Herb Bundle, 3× Oran Bark | Craft potions from ingredients; buy herbs |
-| **Inn** | 10× Wood, 5× Stone | Bonus HP regen after resting; companion recruitment unlocked |
-| **Shrine** | 5× Moonstone, 3× Holy Relic | Lift curses, bless items, identify scrolls cheaper |
-| **Monster Ranch** | 15× Wood, 5× Monster Core | House collected monsters (see Phase 11) |
-| **Companion Quarters** | 20× Wood, 10× Stone | Companion social events, gift-giving (see Phase 10) |
-| **Guild Hall** | 15× Stone, 5× Dark Crystal | Daily challenge dungeons, bounty board for extra gold |
+| Building | Notes |
+|----------|--------|
+| **Forge Lv1 / Lv2** | Formal progression; Lv2 lowers forge material costs |
+| **Herbalist / Inn / Shrine / Guild** | Placeholder unlocks + footprint tiles; deeper services in later phases |
 
 ### Visual Town Growth
-- Town tilemap expands as buildings are added — new rooms/areas become walkable
-- Each building is represented by a distinct tile color or sprite region
-- NPC characters appear in completed buildings
+- North corridor from the town square; extra floor tiles open when some buildings complete
+- Distinct building art and NPCs — still planned
 
 ### Material Inventory
-- Separate from item inventory (no slot limit, stacks by type)
-- Displayed in new "Materials" tab on HUD or via dedicated screen
+- Same stash as Phase 7; HUD shows a compact **Mats:** summary
 
 ### Implementation Notes
-- `world/town_builder.py`: new module, `Building` dataclass, construction logic
-- `game/app.py`: Town Plot interaction (step on tile → open build menu)
-- `data/buildings.json`: define all building requirements and unlocks
-- `game/save_manager.py`: persist building state, material counts
+- `world/town_builder.py`: `BuildingDef`, JSON load, construction helpers
+- `game/app.py`: Town Plot, material node harvest, forge tier bonuses
+- `data/buildings.json`: requirements and gold costs
+- `game/save_manager.py`: `completed_buildings`
 
 ---
 
