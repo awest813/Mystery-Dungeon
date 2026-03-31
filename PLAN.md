@@ -96,8 +96,8 @@ at the Town Plot (new area north of the existing town square).
 | **Herbalist Hut** | 8× Herb Bundle, 3× Oran Bark | Craft potions from ingredients; buy herbs |
 | **Inn** | 10× Wood, 5× Stone | Bonus HP regen after resting; companion recruitment unlocked |
 | **Shrine** | 5× Moonstone, 3× Holy Relic | Lift curses, bless items, identify scrolls cheaper |
-| **Monster Ranch** | 15× Wood, 5× Monster Core | House collected monsters (see Phase 10) |
-| **Companion Quarters** | 20× Wood, 10× Stone | Companion social events, gift-giving (see Phase 9) |
+| **Monster Ranch** | 15× Wood, 5× Monster Core | House collected monsters (see Phase 11) |
+| **Companion Quarters** | 20× Wood, 10× Stone | Companion social events, gift-giving (see Phase 10) |
 | **Guild Hall** | 15× Stone, 5× Dark Crystal | Daily challenge dungeons, bounty board for extra gold |
 
 ### Visual Town Growth
@@ -117,7 +117,92 @@ at the Town Plot (new area north of the existing town square).
 
 ---
 
-## 🔜 Phase 9 – Romanceable Companions
+## 🔜 Phase 9 – Crafting, Cooking & Life Sim
+
+**Goal**: Give the player meaningful things to do between dungeon runs — cook meals for
+buffs, craft gear and consumables from gathered materials, tend a garden, and experience
+a living daily cycle. Inspired by Stardew Valley, Recettear, and Atelier series.
+
+### Cooking System
+- **Kitchen** building (requires 10× Wood, 5× Stone, 3× Herb Bundle) unlocks the cooking interface
+- Recipes combine ingredients found in dungeons or grown in the Garden (see below):
+  - Raw food items (Oran Berry, Rawst Leaf, Apples, Mushrooms, Monster Drops)
+  - **Cooked meals** grant timed buffs lasting the next dungeon run:
+
+| Dish | Ingredients | Buff |
+|------|------------|------|
+| Hearty Stew | 2× Mushroom, 1× Meat Chunk | +20% max HP for run |
+| Ember Curry | 1× Flame Shard, 2× Spice Herb | +15% ATK, immune to Freeze |
+| Frost Sorbet | 1× Frost Jewel, 1× Oran Berry | +15% DEF, immune to Burn |
+| Revive Broth | 1× Oran Bark, 1× Herb Bundle | Auto-revive once on death |
+| Lucky Pudding | 1× Honey, 2× Sweet Herb | +10% gold & item drop rate |
+| Stamina Rice | 3× Grain, 1× Herb Bundle | Hunger drains 30% slower |
+
+- Recipes are **discovered** by experimenting (combining unknown ingredients) or found
+  as dungeon loot (Recipe Scrolls)
+- A **Cookbook** UI tab tracks discovered vs. undiscovered recipes
+- Meals expire after one dungeon run; up to 2 meals can be active simultaneously
+
+### Crafting System
+- **Workbench** building (requires 8× Wood, 4× Iron Ore) unlocks consumable crafting
+- Craft items from dungeon materials without needing to find them as drops:
+
+| Item | Materials | Effect |
+|------|-----------|--------|
+| Antidote Potion | 2× Herb Bundle, 1× Slime Gel | Cures Poison + Burn |
+| Flash Bomb | 1× Flame Shard, 2× Stone | Blinds all enemies in room |
+| Escape Rope | 3× Bat Wing, 2× Vine | Instant dungeon exit, keeps loot |
+| Spike Trap | 2× Iron Ore, 1× Stone | Placeable trap tile |
+| Friend Orb | 1× Monster Core, 2× Moonstone | Guaranteed capture attempt |
+| Stamina Seed | 2× Grain, 1× Oran Bark | Permanently +5 max hunger |
+
+- Crafting recipes are unlocked via the Workbench by discovering materials or finding
+  **Blueprint** items in dungeons
+- Higher-tier Workbench upgrades (Lv2: +10× Steel) unlock advanced recipes
+
+### Farming / Garden
+- **Garden Patch** building (requires 5× Wood, 5× Seed Bag) lets the player grow ingredients
+- Plant seeds found in dungeons; crops grow over a set number of dungeon runs ("days")
+- Crops: Oran Berry (3 days), Herb Bundle (2 days), Sweet Herb (4 days), Grain (2 days)
+- Watering (interact with patch before a run) speeds growth by 1 day
+- Fully grown crops are harvested automatically on return from the dungeon
+- The **Composter** upgrade converts excess crops into Fertilizer, further speeding growth
+
+### Daily / Seasonal Cycle
+- Each completed dungeon run advances the in-game **day counter**
+- Every 7 days is a new **week**; every 28 days is a new **season** (Spring/Summer/Autumn/Winter)
+- Seasonal effects:
+  - **Spring**: herb crops grow 1 day faster; monsters drop extra Herb Bundle
+  - **Summer**: Flame-type enemies +10% ATK; fire-immune food ingredients spawn more often
+  - **Autumn**: gold drops +10%; Lucky Pudding buff doubled
+  - **Winter**: Frost-type enemies +10% ATK; hunger drains 20% faster in dungeons
+- Seasonal festivals (day 14 & 28 each season) unlock limited-time shop stock and
+  special dungeon events
+
+### Life Sim Social Loop
+- Each "day" NPCs in town have new dialogue reflecting world events (new building built,
+  season change, recent dungeon event)
+- Gifting cooked meals to companions (Phase 10) counts as a high-value affection action
+- Seasonal festivals allow gift-giving to all town NPCs for small affection/reputation boosts
+- **Town Reputation** meter (0–100): raised by building, gifting, and completing bounties;
+  unlocks NPC discounts and new dialogue branches
+
+### Implementation Notes
+- `world/kitchen.py`: new module, `Recipe` dataclass, cooking interface, meal buff tracker
+- `world/workbench.py`: `Blueprint` dataclass, crafting queue, recipe unlock logic
+- `world/garden.py`: `Crop` dataclass, growth tick system, harvest logic
+- `game/calendar.py`: day/week/season counter, seasonal effect application
+- `data/recipes/cooking.json`: all cooking recipes, ingredients, buff definitions
+- `data/recipes/crafting.json`: all crafting blueprints, material costs
+- `data/crops.json`: crop types, growth times, seasonal modifiers
+- `ui/kitchen_screen.py`: recipe browser, cook interface, active meal display
+- `ui/workbench_screen.py`: blueprint list, craft interface
+- `ui/garden_screen.py`: patch grid, crop status, water/harvest actions
+- `game/save_manager.py`: persist meal buffs, crop state, day counter, town reputation
+
+---
+
+## 🔜 Phase 10 – Romanceable Companions
 
 **Goal**: 3–5 unique companions who join the player's party, develop relationships,
 and have narrative arcs. Inspired by Persona Q social links, Stardew Valley romance,
@@ -164,7 +249,7 @@ and Fire Emblem support conversations.
 
 ---
 
-## 🔜 Phase 10 – Monster Collecting
+## 🔜 Phase 11 – Monster Collecting
 
 **Goal**: Defeat or befriend dungeon monsters, add them to a roster, deploy them as
 dungeon allies or town Ranch residents. Inspired by PMD partner system, Pokemon,
@@ -199,7 +284,7 @@ and Digimon Story.
 - Evolution changes sprite color, upgrades stats, and unlocks a new skill
 
 ### Monster Social Bonds
-- Monsters left at the Ranch can interact with companions (see Phase 9)
+- Monsters left at the Ranch can interact with companions (see Phase 10)
 - High-affinity monster+companion pairs unlock special combo skills in the dungeon
 
 ### Ranch Mini-Game
@@ -217,7 +302,7 @@ and Digimon Story.
 
 ---
 
-## 🔜 Phase 11 – Integration & Endgame
+## 🔜 Phase 12 – Integration & Endgame
 
 - **Infinite dungeon mode**: floors 20+ with all systems active, leaderboard score
 - **New Game+**: carry forward monster roster and companion bonds; dungeons harder
