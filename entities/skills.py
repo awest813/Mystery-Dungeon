@@ -72,6 +72,17 @@ SKILL_DEFS = {
         "element": "dark",
         "learn_level": 8,
     },
+    "earthquake": {
+        "display": "Earthquake",
+        "pp": 8,
+        "max_pp": 8,
+        "range": 2,
+        "damage_mult": 1.0,
+        "aoe": True,
+        "description": "Shakes the ground. Hits ALL enemies in range 2.",
+        "element": None,
+        "learn_level": 9,
+    },
     "giga_impact": {
         "display": "Giga Impact",
         "pp": 5,
@@ -128,6 +139,7 @@ LEVEL_SKILL_LEARN = {
     6:  "thunder",
     7:  "toxic",
     8:  "shadow_claw",
+    9:  "earthquake",
     10: "giga_impact",
 }
 
@@ -142,6 +154,7 @@ class Skill:
         self.range = data["range"]
         self.damage_mult = data.get("damage_mult", 1.0)
         self.push = data.get("push", False)
+        self.aoe = data.get("aoe", False)
         self.status_inflict = data.get("status_inflict", None)
         self.hp_restore_frac = data.get("hp_restore_frac", 0)
         self.element = data.get("element", None)
