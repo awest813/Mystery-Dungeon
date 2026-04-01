@@ -254,6 +254,115 @@ ITEM_DEFS = {
         "effect": "identify_item",
         "description": "Identifies one unidentified item in inventory.",
     },
+
+    # --- Phase 9 – Cooking Ingredients ---
+    "mushroom": {
+        "display": "Mushroom",
+        "category": "food",
+        "color": (0.6, 0.5, 0.4, 1),
+        "hunger_restore": 15,
+        "description": "A wild mushroom. Can be cooked.",
+    },
+    "meat_chunk": {
+        "display": "Meat Chunk",
+        "category": "food",
+        "color": (0.8, 0.3, 0.3, 1),
+        "hunger_restore": 25,
+        "description": "Raw meat from a monster. Cook it!",
+    },
+    "spice_herb": {
+        "display": "Spice Herb",
+        "category": "food",
+        "color": (0.9, 0.5, 0.1, 1),
+        "hunger_restore": 5,
+        "description": "A pungent herb used in cooking.",
+    },
+    "oran_bark": {
+        "display": "Oran Bark",
+        "category": "food",
+        "color": (0.3, 0.6, 0.3, 1),
+        "hunger_restore": 10,
+        "description": "Bark from an oran tree.",
+    },
+    "herb_bundle": {
+        "display": "Herb Bundle",
+        "category": "food",
+        "color": (0.2, 0.7, 0.2, 1),
+        "hunger_restore": 10,
+        "description": "A bundle of fresh herbs.",
+    },
+    "sweet_herb": {
+        "display": "Sweet Herb",
+        "category": "food",
+        "color": (0.8, 0.8, 0.4, 1),
+        "hunger_restore": 8,
+        "description": "A sweet-smelling herb.",
+    },
+    "honey": {
+        "display": "Honey",
+        "category": "food",
+        "color": (0.9, 0.7, 0.1, 1),
+        "hunger_restore": 12,
+        "description": "Golden honey. Sweet and sticky.",
+    },
+    "grain": {
+        "display": "Grain",
+        "category": "food",
+        "color": (0.8, 0.7, 0.5, 1),
+        "hunger_restore": 10,
+        "description": "A handful of grain.",
+    },
+    "stone": {
+        "display": "Stone",
+        "category": "food",
+        "color": (0.5, 0.5, 0.5, 1),
+        "hunger_restore": 0,
+        "description": "A plain stone. Used in crafting.",
+    },
+    "vine": {
+        "display": "Vine",
+        "category": "food",
+        "color": (0.3, 0.6, 0.2, 1),
+        "hunger_restore": 0,
+        "description": "A sturdy vine. Used in crafting.",
+    },
+
+    # --- Phase 12 – Monster Evolution & Capture ---
+    "friend_orb": {
+        "display": "Friend Orb",
+        "category": "orb",
+        "color": (1.0, 0.5, 0.8, 1),
+        "effect": "friend_orb",
+        "description": "Increases chance to befriend a monster.",
+    },
+    "slime_crown": {
+        "display": "Slime Crown",
+        "category": "food",
+        "color": (0.5, 1.0, 0.5, 1),
+        "hunger_restore": 0,
+        "description": "A gooey crown. Triggers slime evolution.",
+    },
+    "war_drum": {
+        "display": "War Drum",
+        "category": "food",
+        "color": (0.6, 0.3, 0.2, 1),
+        "hunger_restore": 0,
+        "description": "A tiny drum. Triggers goblin evolution.",
+    },
+    "moon_wing": {
+        "display": "Moon Wing",
+        "category": "food",
+        "color": (0.4, 0.2, 0.6, 1),
+        "hunger_restore": 0,
+        "description": "A dark wing. Triggers bat evolution.",
+    },
+    "frost_core": {
+        "display": "Frost Core",
+        "category": "food",
+        "color": (0.6, 0.9, 1.0, 1),
+        "hunger_restore": 0,
+        "description": "A freezing core. Triggers ice wisp evolution.",
+    },
 }
 
 # Items that can appear on dungeon floors (weighted)
@@ -269,6 +378,12 @@ FLOOR_ITEM_TABLE = {
          ("iron_blade", 10), ("flame_sword", 6), ("frost_brand", 6), ("orb_of_escape", 8),
          ("orb_of_foes", 8), ("orb_of_freeze", 8), ("antidote", 10), ("dungeon_key", 5),
          ("heal_potion", 5), ("identify_scroll", 4)],
+    12: [("big_apple", 10), ("full_potion", 10), ("elixir", 10), ("iron_blade", 8),
+         ("flame_sword", 6), ("frost_brand", 6), ("orb_of_escape", 8),
+         ("orb_of_foes", 8), ("orb_of_freeze", 8), ("antidote", 8), ("dungeon_key", 5),
+         ("mushroom", 12), ("meat_chunk", 10), ("spice_herb", 8), ("honey", 8),
+         ("grain", 10), ("sweet_herb", 6), ("vine", 8), ("stone", 10),
+         ("friend_orb", 3), ("slime_crown", 2), ("war_drum", 2), ("moon_wing", 2), ("frost_core", 2)],
 }
 
 def _get_item_table(floor_level):

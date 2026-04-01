@@ -1,0 +1,12 @@
+{
+  "id": "mira",
+  "name": "Mira",
+  "role": "Healer",
+  "max_hp": 20,
+  "attack_power": 2,
+  "xp_value": 7,
+  "preferred_items": ["herb_bundle", "oran_berry", "honey"],
+  "disliked_items": ["flame_shard", "meat_chunk"],
+  "description": "An optimistic healer who collects monster lore.",
+  "personality": "Cheerful, caring, curious"
+}

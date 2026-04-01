@@ -12,6 +12,13 @@ TILE_SEALED  = 7   # Sealed room door – needs a key (Choco Dungeon)
 TILE_FORGE   = 8   # Town forge (must match game/app.py)
 TILE_MATERIAL_NODE = 9   # Phase 8: ore vein / crystal – yields materials on step
 TILE_TOWN_PLOT = 10      # Phase 8: town construction site (north of square)
+TILE_HERBALIST = 11      # Phase 8: herbalist shop tile
+TILE_INN       = 12      # Phase 8: inn service tile
+TILE_SHRINE    = 13      # Phase 8: shrine service tile
+TILE_GUILD     = 14      # Phase 8: guild hall tile
+TILE_GARDEN    = 15      # Phase 9: garden patch tile
+TILE_COMPANION = 16      # Phase 10: companion meeting tile
+TILE_RANCH     = 17      # Phase 12: monster ranch tile
 
 TRAP_TYPES = ["spike", "sleep", "warp", "poison", "hunger"]
 

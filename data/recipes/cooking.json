@@ -1,0 +1,46 @@
+{
+  "recipes": [
+    {
+      "id": "hearty_stew",
+      "name": "Hearty Stew",
+      "description": "+20% max HP for next run",
+      "ingredients": {"mushroom": 2, "meat_chunk": 1},
+      "buff": {"stat": "max_hp_pct", "value": 20}
+    },
+    {
+      "id": "ember_curry",
+      "name": "Ember Curry",
+      "description": "+15% ATK, immune to Freeze",
+      "ingredients": {"flame_shard": 1, "spice_herb": 2},
+      "buff": {"stat": "atk_pct", "value": 15, "status_immune": "paralyzed"}
+    },
+    {
+      "id": "frost_sorbet",
+      "name": "Frost Sorbet",
+      "description": "+15% DEF, immune to Burn",
+      "ingredients": {"frost_jewel": 1, "oran_berry": 1},
+      "buff": {"stat": "dmg_reduce_pct", "value": 15, "status_immune": "burn"}
+    },
+    {
+      "id": "revive_broth",
+      "name": "Revive Broth",
+      "description": "Auto-revive once on death",
+      "ingredients": {"oran_bark": 1, "herb_bundle": 1},
+      "buff": {"stat": "auto_revive", "value": 1}
+    },
+    {
+      "id": "lucky_pudding",
+      "name": "Lucky Pudding",
+      "description": "+10% gold & item drops",
+      "ingredients": {"honey": 1, "sweet_herb": 2},
+      "buff": {"stat": "gold_bonus_pct", "value": 10}
+    },
+    {
+      "id": "stamina_rice",
+      "name": "Stamina Rice",
+      "description": "Hunger drains 30% slower",
+      "ingredients": {"grain": 3, "herb_bundle": 1},
+      "buff": {"stat": "hunger_save_pct", "value": 30}
+    }
+  ]
+}

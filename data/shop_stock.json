@@ -1,0 +1,10 @@
+{
+  "herbalist_stock": [
+    {"key": "heal_potion", "gold_cost": 30, "display": "Heal Potion"},
+    {"key": "antidote", "gold_cost": 20, "display": "Antidote"},
+    {"key": "elixir", "gold_cost": 50, "display": "Elixir"},
+    {"key": "apple", "gold_cost": 10, "display": "Apple"},
+    {"key": "big_apple", "gold_cost": 25, "display": "Big Apple"},
+    {"key": "pecha_berry", "gold_cost": 15, "display": "Pecha Berry"}
+  ]
+}

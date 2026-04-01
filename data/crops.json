@@ -1,0 +1,45 @@
+{
+  "crops": [
+    {
+      "id": "oran_berry",
+      "name": "Oran Berry",
+      "growth_days": 3,
+      "yield_item": "oran_berry",
+      "yield_count": 2,
+      "season_bonus": "SPRING"
+    },
+    {
+      "id": "herb_bundle",
+      "name": "Herb Bundle",
+      "growth_days": 2,
+      "yield_item": "herb_bundle",
+      "yield_count": 2,
+      "season_bonus": "SPRING"
+    },
+    {
+      "id": "sweet_herb",
+      "name": "Sweet Herb",
+      "growth_days": 4,
+      "yield_item": "sweet_herb",
+      "yield_count": 1,
+      "season_bonus": "SUMMER"
+    },
+    {
+      "id": "grain",
+      "name": "Grain",
+      "growth_days": 2,
+      "yield_item": "grain",
+      "yield_count": 3,
+      "season_bonus": "AUTUMN"
+    },
+    {
+      "id": "mushroom",
+      "name": "Mushroom",
+      "growth_days": 2,
+      "yield_item": "mushroom",
+      "yield_count": 2,
+      "season_bonus": null
+    }
+  ],
+  "garden_capacity": 4
+}

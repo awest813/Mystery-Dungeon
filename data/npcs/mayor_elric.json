@@ -1,0 +1,34 @@
+{
+  "id": "mayor_elric",
+  "name": "Mayor Elric",
+  "role": "Mayor",
+  "color": [0.8, 0.6, 0.2, 1],
+  "model_type": "orc",
+  "schedule": [
+    {"hour": 6, "x": 15, "y": 14, "activity": "idle", "dialogue": "Good morning! The town is thriving thanks to you."},
+    {"hour": 9, "x": 14, "y": 13, "activity": "working", "dialogue": "I'm reviewing the town records. Building projects look good!"},
+    {"hour": 12, "x": 15, "y": 14, "activity": "idle", "dialogue": "Lunch break! The inn's stew is excellent today."},
+    {"hour": 15, "x": 16, "y": 15, "activity": "walking", "dialogue": "Just taking a stroll through the town square."},
+    {"hour": 18, "x": 15, "y": 14, "activity": "idle", "dialogue": "Evening already? Time flies when the town is busy."},
+    {"hour": 21, "x": 15, "y": 14, "activity": "sleeping", "dialogue": "Good night. The town is safe in your hands."}
+  ],
+  "preferred_gifts": ["big_apple", "honey", "grain"],
+  "disliked_gifts": ["meat_chunk", "slime_gel"],
+  "dialogues": {
+    "default": [
+      "Hello there. I'm Mayor Elric.",
+      "The town has grown so much lately!",
+      "Your dungeon expeditions bring us great prosperity.",
+      "I've heard tales of your deeds. The town is proud.",
+      "You're the hero this town has always needed."
+    ],
+    "festival": [
+      "The festival preparations are going well!",
+      "I hope you'll join us for the celebration."
+    ],
+    "high_affection": [
+      "I consider you a true friend of this town.",
+      "Your dedication inspires everyone here."
+    ]
+  }
+}

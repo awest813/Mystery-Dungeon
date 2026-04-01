@@ -12,6 +12,8 @@ from direct.gui.OnscreenText import OnscreenText
 from entities.items import RARITY_TIERS
 from panda3d.core import TextNode
 
+from ui.menu_theme import BODY, HINT, MUTED, TITLE_MINT
+
 
 class ItemScreen:
     """
@@ -47,25 +49,25 @@ class ItemScreen:
         self._desc_text = OnscreenText(
             text="",
             pos=(0, 0.08), scale=0.055,
-            fg=(0.85, 0.85, 0.85, 1), align=TextNode.ACenter,
+            fg=BODY, align=TextNode.ACenter,
             mayChange=True
         )
         self._affixes_text = OnscreenText(
             text="",
             pos=(0, -0.10), scale=0.055,
-            fg=(0.4, 0.9, 0.4, 1), align=TextNode.ACenter,
+            fg=TITLE_MINT, align=TextNode.ACenter,
             mayChange=True
         )
         self._flavor_text = OnscreenText(
             text="",
             pos=(0, -0.28), scale=0.048,
-            fg=(0.6, 0.6, 0.8, 1), align=TextNode.ACenter,
+            fg=MUTED, align=TextNode.ACenter,
             mayChange=True
         )
         self._hint_text = OnscreenText(
             text="[I] Close",
             pos=(0, -0.42), scale=0.045,
-            fg=(0.5, 0.5, 0.5, 1), align=TextNode.ACenter,
+            fg=HINT, align=TextNode.ACenter,
             mayChange=False
         )
         self._lines = [

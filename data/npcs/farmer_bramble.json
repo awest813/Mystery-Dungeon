@@ -1,0 +1,29 @@
+{
+  "id": "farmer_bramble",
+  "name": "Farmer Bramble",
+  "role": "Farmer",
+  "color": [0.3, 0.7, 0.3, 1],
+  "model_type": "goblin",
+  "schedule": [
+    {"hour": 5, "x": 12, "y": 17, "activity": "working", "dialogue": "Early to rise, early to tend the crops."},
+    {"hour": 9, "x": 12, "y": 17, "activity": "working", "dialogue": "The soil is rich this season."},
+    {"hour": 13, "x": 13, "y": 17, "activity": "idle", "dialogue": "Lunch under the shade tree."},
+    {"hour": 16, "x": 12, "y": 17, "activity": "working", "dialogue": "Harvest time approaches."},
+    {"hour": 19, "x": 12, "y": 17, "activity": "sleeping", "dialogue": "The fields rest, and so should I."}
+  ],
+  "preferred_gifts": ["grain", "mushroom", "oran_berry"],
+  "disliked_gifts": ["dark_crystal", "frost_jewel"],
+  "dialogues": {
+    "default": [
+      "Mornin'! I'm Bramble, the town farmer.",
+      "The garden patch is doing well this season.",
+      "If you need tips on growing crops, just ask!",
+      "Your monster ranch is impressive. I can teach you a trick or two.",
+      "The land provides for those who tend it with care."
+    ],
+    "garden": [
+      "Water your crops before heading into the dungeon!",
+      "Different seasons favor different crops. Plan ahead."
+    ]
+  }
+}

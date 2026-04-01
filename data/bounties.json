@@ -1,0 +1,31 @@
+{
+  "bounties": [
+    {
+      "id": "slay_foes",
+      "name": "Slay Foes",
+      "description": "Defeat 5 enemies in the dungeon",
+      "target_type": "kill",
+      "target_count": 5,
+      "gold_reward": 50,
+      "xp_reward": 25
+    },
+    {
+      "id": "floor_clear",
+      "name": "Floor Clear",
+      "description": "Descend 3 dungeon floors",
+      "target_type": "floor",
+      "target_count": 3,
+      "gold_reward": 80,
+      "xp_reward": 40
+    },
+    {
+      "id": "harvest_nodes",
+      "name": "Harvest",
+      "description": "Gather from 3 material nodes",
+      "target_type": "material",
+      "target_count": 3,
+      "gold_reward": 40,
+      "xp_reward": 15
+    }
+  ]
+}

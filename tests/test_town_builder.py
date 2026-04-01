@@ -99,4 +99,5 @@ def test_apply_completed_building_tiles_opens_cells():
     grid = [[0 for _ in range(25)] for _ in range(25)]
     completed = {"herbalist_hut"}
     town_builder.apply_completed_building_tiles(grid, completed)
-    assert grid[12][20] == 1  # TILE_FLOOR
+    from world.dungeon_generator import TILE_HERBALIST
+    assert grid[12][20] == TILE_HERBALIST  # building tile, not plain floor

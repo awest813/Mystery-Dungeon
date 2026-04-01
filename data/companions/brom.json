@@ -1,0 +1,12 @@
+{
+  "id": "brom",
+  "name": "Brom",
+  "role": "Knight",
+  "max_hp": 35,
+  "attack_power": 4,
+  "xp_value": 6,
+  "preferred_items": ["meat_chunk", "iron_ore", "big_apple"],
+  "disliked_items": ["slime_gel", "moonstone"],
+  "description": "A gruff but loyal knight who hates slimes.",
+  "personality": "Gruff, loyal, protective"
+}
