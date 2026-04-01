@@ -28,6 +28,8 @@ ENEMY_TYPES = {
         "chase_radius": 6,
         "description": "A squishy slime.",
         "move_pattern": "normal",  # normal, random, aggressive, cautious
+        "element_type": None,
+        "evasion": 0,
     },
     "bat": {
         "color": (0.5, 0.3, 0.6, 1),
@@ -38,6 +40,8 @@ ENEMY_TYPES = {
         "chase_radius": 10,
         "description": "A fast cave bat.",
         "move_pattern": "aggressive",
+        "element_type": "flying",
+        "evasion": 20,  # quick flier; hard to hit
     },
     "goblin": {
         "color": (0.4, 0.7, 0.2, 1),
@@ -48,6 +52,8 @@ ENEMY_TYPES = {
         "chase_radius": 7,
         "description": "A cunning goblin.",
         "move_pattern": "normal",
+        "element_type": None,
+        "evasion": 5,
     },
     "ghost": {
         "color": (0.7, 0.7, 1.0, 0.6),
@@ -58,6 +64,8 @@ ENEMY_TYPES = {
         "chase_radius": 9,
         "description": "A phasing spirit.",
         "move_pattern": "random",    # moves unpredictably
+        "element_type": "ghost",
+        "evasion": 25,  # phases through attacks
     },
     "orc": {
         "color": (0.3, 0.5, 0.1, 1),
@@ -68,6 +76,8 @@ ENEMY_TYPES = {
         "chase_radius": 6,
         "description": "A hulking orc brute.",
         "move_pattern": "cautious",  # only attacks when very close
+        "element_type": None,
+        "evasion": 0,
     },
     "fire_imp": {
         "color": (1.0, 0.3, 0.0, 1),
@@ -79,6 +89,8 @@ ENEMY_TYPES = {
         "description": "A fiery imp that burns.",
         "move_pattern": "aggressive",
         "status_on_hit": "burn",
+        "element_type": "fire",
+        "evasion": 10,
     },
     "ice_wisp": {
         "color": (0.5, 0.8, 1.0, 1),
@@ -90,6 +102,8 @@ ENEMY_TYPES = {
         "description": "A frozen wisp that chills.",
         "move_pattern": "normal",
         "status_on_hit": "paralyzed",
+        "element_type": "ice",
+        "evasion": 10,
     },
     "dark_knight": {
         "color": (0.15, 0.05, 0.25, 1),
@@ -101,6 +115,8 @@ ENEMY_TYPES = {
         "description": "A dread champion of the abyss.",
         "move_pattern": "aggressive",
         "is_boss": True,
+        "element_type": "dark",
+        "evasion": 10,
     },
 }
 
@@ -161,6 +177,8 @@ class Enemy(Entity):
         self.move_pattern = data.get("move_pattern", "normal")
         self.status_on_hit = data.get("status_on_hit", None)
         self.is_boss = data.get("is_boss", False)
+        self.element_type = data.get("element_type", None)
+        self.evasion = data.get("evasion", 0)
         self.base_color = color
 
         if self.visual:

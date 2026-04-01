@@ -1,5 +1,6 @@
 import random
 from world.dungeon_generator import TRAP_TYPES
+from entities.type_chart import get_type_multiplier, EFFECTIVENESS_LABELS
 
 
 class TurnSystem:
@@ -85,6 +86,12 @@ class TurnSystem:
 
     def _do_player_attack(self, enemy):
         """Resolve a basic player melee attack."""
+        # Evasion check — enemy may dodge
+        evasion = getattr(enemy, 'evasion', 0)
+        if evasion > 0 and random.randint(1, 100) <= evasion:
+            self.log_callback(f"{enemy.name} evaded your attack!")
+            return True
+
         dmg = self.player.effective_attack
 
         # Crit chance (Phase 7 affix)
@@ -153,6 +160,47 @@ class TurnSystem:
             skill.use()
             return True
 
+        # --- AoE skill: hit all enemies in range ---
+        if skill.aoe:
+            targets = [e for e in self.enemies
+                       if not e.is_dead
+                       and abs(e.x - self.player.x) + abs(e.y - self.player.y) <= skill.range]
+            if not targets:
+                self.log_callback(f"No targets in range for {skill.display}!")
+                return False
+            self.log_callback(f"{skill.display}!")
+            for e in targets:
+                evasion = getattr(e, 'evasion', 0)
+                if evasion > 0 and random.randint(1, 100) <= evasion:
+                    self.log_callback(f"{e.name} evaded!")
+                    continue
+                dmg = int(self.player.effective_attack * skill.damage_mult)
+                if dmg > 0:
+                    e.take_damage(dmg)
+                    self.log_callback(f"  {e.name} takes {dmg} dmg!")
+                if skill.status_inflict:
+                    e.apply_status(skill.status_inflict, self.log_callback)
+                if e.is_dead:
+                    self.log_callback(f"  Defeated {e.name}!")
+                    if self.kill_callback:
+                        self.kill_callback(e)
+                    leveled = self.player.add_xp(e.xp_value)
+                    if leveled:
+                        self.log_callback(f"Level UP! Now Lv.{self.player.level}!")
+                    gold = e.gold_drop()
+                    if self.player.gold_bonus_pct > 0:
+                        gold = int(gold * (1 + self.player.gold_bonus_pct / 100))
+                    self.player.add_gold(gold)
+                    mats = e.get_material_drops()
+                    if mats:
+                        for mat_key, count in mats.items():
+                            self.player.add_material(mat_key, count)
+                        mat_str = ", ".join(f"{c}x {k.replace('_',' ').title()}"
+                                            for k, c in mats.items())
+                        self.log_callback(f"  Drops: {mat_str}")
+            skill.use()
+            return True
+
         # Find target: closest enemy within range
         best_enemy = None
         best_dist = skill.range + 1
@@ -168,7 +216,25 @@ class TurnSystem:
             self.log_callback(f"No target in range for {skill.display}!")
             return False
 
+        # Evasion check for single-target skills
+        evasion = getattr(best_enemy, 'evasion', 0)
+        if evasion > 0 and random.randint(1, 100) <= evasion:
+            self.log_callback(f"{best_enemy.name} evaded {skill.display}!")
+            skill.use()
+            return True
+
         dmg = int(self.player.effective_attack * skill.damage_mult)
+
+        # Type effectiveness
+        if dmg > 0 and skill.element:
+            enemy_elem = getattr(best_enemy, 'element_type', None)
+            mult = get_type_multiplier(skill.element, enemy_elem)
+            if mult != 1.0:
+                dmg = max(1, int(dmg * mult))
+                label = EFFECTIVENESS_LABELS.get(mult)
+                if label:
+                    self.log_callback(label)
+
         if dmg > 0:
             best_enemy.take_damage(dmg)
             self.log_callback(f"{skill.display}! {best_enemy.name} takes {dmg} dmg!")
