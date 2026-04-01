@@ -1,24 +1,26 @@
 from direct.gui.OnscreenText import OnscreenText
 from entities.items import RARITY_TIERS
 from panda3d.core import TextNode
+from ui.health_bar import HealthBar
 
 
 class GameHUD:
     def __init__(self):
         # --- Left panel: HP, Hunger, Level, XP, Status ---
-        self.hp_text = OnscreenText(
-            text="HP: 30 / 30",
-            pos=(-1.3, 0.93), scale=0.065,
-            fg=(0.3, 1.0, 0.3, 1), align=TextNode.ALeft, mayChange=True
+        self.hp_bar = HealthBar(
+            parent=None, pos=(-1.0, 0, 0.90),
+            width=0.4, height=0.04, label="HP",
+            fg=(0.3, 1.0, 0.3, 1)
         )
-        self.hunger_text = OnscreenText(
-            text="HUNGER: 100",
-            pos=(-1.3, 0.83), scale=0.065,
-            fg=(1.0, 0.8, 0.3, 1), align=TextNode.ALeft, mayChange=True
+        self.hunger_bar = HealthBar(
+            parent=None, pos=(-1.0, 0, 0.80),
+            width=0.4, height=0.04, label="Hunger",
+            fg=(1.0, 0.8, 0.3, 1)
         )
+        
         self.level_text = OnscreenText(
             text="Lv.1  XP: 0/20",
-            pos=(-1.3, 0.73), scale=0.060,
+            pos=(-1.3, 0.70), scale=0.060,
             fg=(0.7, 0.7, 1.0, 1), align=TextNode.ALeft, mayChange=True
         )
         self.status_text = OnscreenText(
@@ -47,6 +49,16 @@ class GameHUD:
             text="",
             pos=(1.3, 0.63), scale=0.042,
             fg=(0.75, 0.85, 0.95, 1), align=TextNode.ARight, mayChange=True
+        )
+        self.day_text = OnscreenText(
+            text="",
+            pos=(1.3, 0.53), scale=0.042,
+            fg=(0.6, 0.9, 0.6, 1), align=TextNode.ARight, mayChange=True
+        )
+        self.meals_text = OnscreenText(
+            text="",
+            pos=(-1.3, 0.53), scale=0.042,
+            fg=(0.9, 0.7, 0.4, 1), align=TextNode.ALeft, mayChange=True
         )
 
         # --- Bottom center: Floor status ---
@@ -104,14 +116,15 @@ class GameHUD:
             hp_color = (1.0, 0.8, 0.0, 1)
         else:
             hp_color = (1.0, 0.2, 0.2, 1)
-        self.hp_text.setText(f"HP: {int(player.hp)} / {int(player.max_hp)}")
-        self.hp_text.setFg(hp_color)
+        
+        self.hp_bar.update(player.hp, max(1, player.max_hp), color=hp_color)
+        self.hp_bar.set_label(f"HP: {int(player.hp)} / {int(player.max_hp)}")
 
         # Hunger with color coding
         hung_frac = player.hunger / max(1, player.max_hunger)
         hung_color = (1.0, 0.8, 0.3, 1) if hung_frac > 0.3 else (1.0, 0.3, 0.1, 1)
-        self.hunger_text.setText(f"HUNGER: {int(player.hunger)}")
-        self.hunger_text.setFg(hung_color)
+        self.hunger_bar.update(player.hunger, max(1, player.max_hunger), color=hung_color)
+        self.hunger_bar.set_label(f"HUNGER: {int(player.hunger)}")
 
         # Level / XP
         xp_to = getattr(player, 'xp_to_next', 20)
@@ -157,6 +170,21 @@ class GameHUD:
         else:
             self.materials_text.setText("Mats: —")
 
+        # Phase 9 – calendar day/season
+        cal = getattr(player, 'calendar', None)
+        if cal:
+            self.day_text.setText(f"Day {cal.day} ({cal.season})")
+        else:
+            self.day_text.setText("")
+
+        # Phase 9 – active meal buffs
+        meals = getattr(player, 'active_meals', [])
+        if meals:
+            meal_str = " | ".join(m["name"] for m in meals)
+            self.meals_text.setText(f"Meals: {meal_str}")
+        else:
+            self.meals_text.setText("")
+
         # Skill bar (PMD 4-slot style)
         sel_idx = getattr(player, 'selected_skill_idx', 0)
         skills = getattr(player, 'skills', [])
@@ -189,17 +217,21 @@ class GameHUD:
     # ------------------------------------------------------------------ #
 
     def hide(self):
-        for t in [self.hp_text, self.hunger_text, self.level_text, self.status_text,
+        self.hp_bar.hide()
+        self.hunger_bar.hide()
+        for t in [self.level_text, self.status_text,
                   self.gold_text, self.weapon_text, self.inv_text, self.materials_text,
-                  self.floor_text, self.log_text]:
+                  self.day_text, self.meals_text, self.floor_text, self.log_text]:
             t.hide()
         for sl in self.skill_labels:
             sl.hide()
 
     def show(self):
-        for t in [self.hp_text, self.hunger_text, self.level_text, self.status_text,
+        self.hp_bar.show()
+        self.hunger_bar.show()
+        for t in [self.level_text, self.status_text,
                   self.gold_text, self.weapon_text, self.inv_text, self.materials_text,
-                  self.floor_text, self.log_text]:
+                  self.day_text, self.meals_text, self.floor_text, self.log_text]:
             t.show()
         for sl in self.skill_labels:
             sl.show()

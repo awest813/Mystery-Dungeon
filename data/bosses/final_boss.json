@@ -1,0 +1,36 @@
+{
+  "final_boss": {
+    "name": "The Abyssal King",
+    "type": "abyssal_king",
+    "floor_trigger": 25,
+    "phases": [
+      {
+        "name": "Phase 1: The Guardian",
+        "max_hp": 150,
+        "attack_power": 15,
+        "skills": ["Shadow Claw", "Giga Impact"],
+        "description": "A towering shadow blocks the exit. It roars with ancient fury."
+      },
+      {
+        "name": "Phase 2: The Fury",
+        "max_hp": 100,
+        "attack_power": 20,
+        "skills": ["Giga Impact", "Toxic", "Thunder"],
+        "description": "The King's armor cracks. It fights with desperate rage!"
+      },
+      {
+        "name": "Phase 3: The Despair",
+        "max_hp": 60,
+        "attack_power": 25,
+        "skills": ["Giga Impact", "Toxic", "Thunder", "Sleep Powder"],
+        "description": "The King is wounded but not broken. It calls upon the dungeon's darkness."
+      }
+    ],
+    "defeat_message": "The Abyssal King falls. The dungeon trembles as light returns to the depths.",
+    "victory_rewards": {
+      "gold": 500,
+      "xp": 200,
+      "unique_item": "abyssal_crown"
+    }
+  }
+}

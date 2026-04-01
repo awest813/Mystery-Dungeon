@@ -1,0 +1,12 @@
+{
+  "id": "lyra",
+  "name": "Lyra",
+  "role": "Mage",
+  "max_hp": 18,
+  "attack_power": 6,
+  "xp_value": 8,
+  "preferred_items": ["mushroom", "frost_jewel", "moonstone"],
+  "disliked_items": ["meat_chunk", "orc_hide"],
+  "description": "A bookish mage with a secret love for adventure.",
+  "personality": "Quiet, thoughtful, secretly brave"
+}

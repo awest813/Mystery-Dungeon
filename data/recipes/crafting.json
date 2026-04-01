@@ -1,0 +1,53 @@
+{
+  "blueprints": [
+    {
+      "id": "antidote_potion",
+      "name": "Antidote Potion",
+      "description": "Cures Poison + Burn",
+      "materials": {"herb_bundle": 2, "slime_gel": 1},
+      "result_item": "antidote"
+    },
+    {
+      "id": "flash_bomb",
+      "name": "Flash Bomb",
+      "description": "Blinds all enemies in room",
+      "materials": {"flame_shard": 1, "stone": 2},
+      "result_item": "orb_of_foes"
+    },
+    {
+      "id": "escape_rope",
+      "name": "Escape Rope",
+      "description": "Instant dungeon exit",
+      "materials": {"bat_wing": 3, "vine": 2},
+      "result_item": "orb_of_escape"
+    },
+    {
+      "id": "heal_salve",
+      "name": "Heal Salve",
+      "description": "Restores 25 HP",
+      "materials": {"herb_bundle": 3, "oran_berry": 1},
+      "result_item": "heal_potion"
+    },
+    {
+      "id": "stamina_brew",
+      "name": "Stamina Brew",
+      "description": "Restores 20 hunger + 10 HP",
+      "materials": {"grain": 2, "mushroom": 1},
+      "result_item": "elixir"
+    },
+    {
+      "id": "spike_kit",
+      "name": "Spike Kit",
+      "description": "Creates a trap tile item",
+      "materials": {"iron_ore": 2, "stone": 1},
+      "result_item": "orb_of_sight"
+    },
+    {
+      "id": "freeze_powder",
+      "name": "Freeze Powder",
+      "description": "Paralyzes all enemies",
+      "materials": {"frost_jewel": 2, "moonstone": 1},
+      "result_item": "orb_of_freeze"
+    }
+  ]
+}

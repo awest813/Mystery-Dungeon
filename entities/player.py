@@ -13,13 +13,14 @@ STAT_GAIN_ATK    = 1
 class Player(Entity):
     def __init__(self, x=0, y=0):
         super().__init__("Player", x, y)
-        self.visual.setColor(0.3, 0.7, 1.0, 1)   # Hero blue
+        self.visual.setColor(0.3, 0.7, 1.0, 1)
         self.max_hp = 30
         self.hp = 30
         self.attack_power = 5
         self.level = 1
         self.xp = 0
         self.xp_to_next = xp_to_next_level(1)
+        self.god_mode = False
 
         # Resources
         self.max_hunger = 100
@@ -46,6 +47,14 @@ class Player(Entity):
         # Phase 8 – Town buildings completed this save (building ids from data/buildings.json)
         self.completed_buildings = set()
 
+        # Phase 8 – Building services
+        self.active_bounty = None      # dict or None: bounty tracking
+        self.inn_buff_hp = 0           # temporary max HP bonus from Inn rest
+
+        # Phase 10 – Companions
+        self.companions = []           # list of Companion objects
+        self.active_companions = set() # set of deployed companion ids
+
         # Phase 7 – Affix-derived combat stats (recalculated on equip/unequip)
         self.crit_chance = 0          # % chance to deal double damage
         self.life_steal_pct = 0       # % of damage dealt restored as HP
@@ -53,6 +62,11 @@ class Player(Entity):
         self.hunger_save_pct = 0      # % hunger drain reduction
         self.gold_bonus_pct = 0       # % extra gold drops
         self.hp_drain_per_turn = 0    # HP lost per turn (cursed)
+
+    def take_damage(self, amount):
+        if self.god_mode:
+            return 0
+        return super().take_damage(amount)
 
     # ------------------------------------------------------------------ #
     #  XP / Levelling                                                      #

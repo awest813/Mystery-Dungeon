@@ -1,0 +1,35 @@
+{
+  "id": "merchant_lina",
+  "name": "Merchant Lina",
+  "role": "Merchant",
+  "color": [0.6, 0.8, 0.3, 1],
+  "model_type": "goblin",
+  "schedule": [
+    {"hour": 7, "x": 13, "y": 13, "activity": "working", "dialogue": "Setting up shop! Fresh goods today."},
+    {"hour": 10, "x": 13, "y": 13, "activity": "working", "dialogue": "Welcome! Take a look at my wares."},
+    {"hour": 14, "x": 14, "y": 13, "activity": "idle", "dialogue": "Business is good today!"},
+    {"hour": 17, "x": 13, "y": 13, "activity": "working", "dialogue": "Last call for bargains!"},
+    {"hour": 20, "x": 13, "y": 13, "activity": "sleeping", "dialogue": "Shop's closed. See you tomorrow!"}
+  ],
+  "preferred_gifts": ["honey", "sweet_herb", "moonstone"],
+  "disliked_gifts": ["stone", "orc_hide"],
+  "dialogues": {
+    "default": [
+      "Hi! I'm Lina. Looking for anything special?",
+      "I've got some rare items from the deep floors!",
+      "The dungeon keeps supplying amazing goods.",
+      "You're my best customer! Here's a discount.",
+      "I trust your judgment on what's valuable."
+    ],
+    "shop": [
+      "Everything's 10% off for you today!",
+      "Check out the new arrivals from the ice caves!"
+    ]
+  },
+  "shop_stock": [
+    {"key": "heal_potion", "gold_cost": 25, "display": "Heal Potion"},
+    {"key": "antidote", "gold_cost": 15, "display": "Antidote"},
+    {"key": "dungeon_key", "gold_cost": 40, "display": "Dungeon Key"},
+    {"key": "identify_scroll", "gold_cost": 20, "display": "Identify Scroll"}
+  ]
+}

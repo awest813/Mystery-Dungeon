@@ -1,5 +1,16 @@
 import random
+from panda3d.core import NodePath, CardMaker
 from .entity_base import Entity
+
+
+def _make_enemy_visual(enemy_type, color):
+    from render import make_enemy_model
+    return make_enemy_model(enemy_type, color)
+
+
+def _make_enemy_shadow(is_boss=False):
+    from render import make_blob_shadow
+    return make_blob_shadow(0.22 if is_boss else 0.16)
 
 class EnemyStatus:
     IDLE = 0
@@ -134,9 +145,13 @@ class Enemy(Entity):
         self.apply_type(enemy_type)
         self.status = EnemyStatus.IDLE
 
+    def _build_visual(self, name):
+        self.shadow = _make_enemy_shadow()
+        self.visual = _make_enemy_visual("slime", (0.2, 0.8, 0.2, 1))
+
     def apply_type(self, enemy_type):
         data = ENEMY_TYPES.get(enemy_type, ENEMY_TYPES["slime"])
-        self.visual.setColor(*data["color"])
+        color = data["color"]
         self.max_hp = data["max_hp"]
         self.hp = data["max_hp"]
         self.attack_power = data["attack_power"]
@@ -146,7 +161,27 @@ class Enemy(Entity):
         self.move_pattern = data.get("move_pattern", "normal")
         self.status_on_hit = data.get("status_on_hit", None)
         self.is_boss = data.get("is_boss", False)
-        self.base_color = data["color"]
+        self.base_color = color
+
+        if self.visual:
+            self.visual.removeNode()
+        if self.shadow:
+            self.shadow.removeNode()
+
+        new_visual = _make_enemy_visual(enemy_type, color)
+        if hasattr(self, 'node') and self.node:
+            parent = self.node.getParent()
+        else:
+            parent = None
+
+        if parent:
+            new_visual.reparentTo(parent)
+        self.visual = new_visual
+
+        new_shadow = _make_enemy_shadow(self.is_boss)
+        if parent:
+            new_shadow.reparentTo(parent)
+        self.shadow = new_shadow
 
     def reset_for_floor(self, floor_level, enemy_type=None):
         """Re-initialize this enemy with a type suitable for the floor, scaling stats."""

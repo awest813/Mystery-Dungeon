@@ -11,7 +11,7 @@ import os
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from world.dungeon_generator import TILE_FLOOR
+from world.dungeon_generator import TILE_FLOOR, TILE_HERBALIST, TILE_INN, TILE_SHRINE, TILE_GUILD
 
 
 @dataclass(frozen=True)
@@ -96,15 +96,25 @@ _BUILDING_FOOTPRINTS: Dict[str, List[Tuple[int, int]]] = {
     "guild_hall": [(16, 21)],
 }
 
+_BUILDING_TILE_MAP: Dict[str, int] = {
+    "herbalist_hut": TILE_HERBALIST,
+    "inn": TILE_INN,
+    "shrine": TILE_SHRINE,
+    "guild_hall": TILE_GUILD,
+}
+
 
 def apply_completed_building_tiles(grid: List[List[int]], completed: Set[str]) -> None:
     w, h = len(grid), len(grid[0]) if grid else 0
     for bid, cells in _BUILDING_FOOTPRINTS.items():
         if bid not in completed:
             continue
-        for tx, ty in cells:
+        for i, (tx, ty) in enumerate(cells):
             if 0 <= tx < w and 0 <= ty < h:
-                grid[tx][ty] = TILE_FLOOR
+                if i == 0 and bid in _BUILDING_TILE_MAP:
+                    grid[tx][ty] = _BUILDING_TILE_MAP[bid]
+                else:
+                    grid[tx][ty] = TILE_FLOOR
 
 
 def ensure_town_walkable_for_buildings(grid: List[List[int]], width: int, height: int) -> None:

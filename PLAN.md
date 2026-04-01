@@ -58,12 +58,12 @@ Inspired by Diablo 2 item affixes, PMD IQ items, and Chocobo Dungeon cursed/bles
 
 ---
 
-## 🔄 Phase 8 – Town Building Through Dungeon Materials (in progress)
+## ✅ Phase 8 – Town Building Through Dungeon Materials
 
 **Goal**: The player's town grows visually and functionally as they bring back materials
 farmed in dungeons. Inspired by Recettear, Stardew Valley, and DQ Builders.
 
-### Implemented so far
+### Implemented
 - **Material nodes** on dungeon floors (`TILE_MATERIAL_NODE`): step on purple deposits for
   theme-weighted materials (Cave / Ice / Fire)
 - **Town Plot** north of the square: stand on the green tile and press **E** to cycle
@@ -72,168 +72,180 @@ farmed in dungeons. Inspired by Recettear, Stardew Valley, and DQ Builders.
   `can_build` / `try_build`, small footprint tiles when certain buildings complete
 - **Forge Lv2** blueprint: when built, town forge enchant/upgrade costs are reduced
 - **HUD** line for non-zero materials; save field **`completed_buildings`**
+- **Visual building tiles**: each completed building (Herbalist, Inn, Shrine, Guild)
+  gets a uniquely colored interactive tile in the north corridor
+- **Herbalist Hut** (tile 11): buy potions and food with gold from a cycling shop
+- **Inn** (tile 12): rest for a temporary max HP buff that lasts one dungeon run
+- **Shrine** (tile 13): purify cursed affixes (50g) or bless weapons with new affixes
+  (80g + materials); cycles services on repeated E press
+- **Guild Hall** (tile 14): accept bounty quests (kill enemies, clear floors, harvest
+  materials) for bonus gold + XP rewards; progress tracked during dungeon runs
+- **Bounty tracking**: kill callback in TurnSystem, floor/material tracking in app,
+  bounty progress saved/loaded with player data
 
 ### Material Farming
 - Enemies drop **materials** on death (Phase 7)
 - **Material nodes** (above) supplement enemy drops
 
 ### Town Buildings
-Long-term targets still include Ranch, Companion Quarters, and full service UIs. Current
-`data/buildings.json` uses only **existing** material keys.
 
-| Building | Notes |
-|----------|--------|
-| **Forge Lv1 / Lv2** | Formal progression; Lv2 lowers forge material costs |
-| **Herbalist / Inn / Shrine / Guild** | Placeholder unlocks + footprint tiles; deeper services in later phases |
+| Building | Services |
+|----------|----------|
+| **Forge Lv1 / Lv2** | Enchant/upgrade weapons; Lv2 lowers material costs |
+| **Herbalist Hut** | Buy potions and food with gold (6 items in rotating stock) |
+| **Inn** | Rest for temporary +HP buff (scales with level) |
+| **Shrine** | Purify cursed weapons; bless weapons with new affixes |
+| **Guild Hall** | Accept bounty quests for bonus gold + XP |
 
 ### Visual Town Growth
-- North corridor from the town square; extra floor tiles open when some buildings complete
-- Distinct building art and NPCs — still planned
+- North corridor from the town square opens as buildings are completed
+- Each building has a distinct colored tile (green, brown, purple, gold)
 
 ### Material Inventory
 - Same stash as Phase 7; HUD shows a compact **Mats:** summary
 
 ### Implementation Notes
-- `world/town_builder.py`: `BuildingDef`, JSON load, construction helpers
-- `game/app.py`: Town Plot, material node harvest, forge tier bonuses
+- `world/town_builder.py`: `BuildingDef`, JSON load, construction helpers, `_BUILDING_TILE_MAP`
+- `game/app.py`: Town Plot, material node harvest, forge tier bonuses, herbalist shop,
+  inn rest buff, shrine purify/bless, guild bounty board
 - `data/buildings.json`: requirements and gold costs
-- `game/save_manager.py`: `completed_buildings`
+- `data/shop_stock.json`: herbalist shop item definitions and prices
+- `data/bounties.json`: bounty quest definitions (slay, clear, harvest)
+- `game/save_manager.py`: `completed_buildings`, `active_bounty`, `inn_buff_hp`
 
 ---
 
-## 🔜 Phase 9 – Crafting, Cooking & Life Sim
+## ✅ Phase 9 – Crafting, Cooking & Life Sim
 
 **Goal**: Give the player meaningful things to do between dungeon runs — cook meals for
 buffs, craft gear and consumables from gathered materials, tend a garden, and experience
 a living daily cycle. Inspired by Stardew Valley, Recettear, and Atelier series.
 
 ### Cooking System
-- **Kitchen** building (requires 10× Wood, 5× Stone, 3× Herb Bundle) unlocks the cooking interface
-- Recipes combine ingredients found in dungeons or grown in the Garden (see below):
-  - Raw food items (Oran Berry, Rawst Leaf, Apples, Mushrooms, Monster Drops)
-  - **Cooked meals** grant timed buffs lasting the next dungeon run:
-
-| Dish | Ingredients | Buff |
-|------|------------|------|
-| Hearty Stew | 2× Mushroom, 1× Meat Chunk | +20% max HP for run |
-| Ember Curry | 1× Flame Shard, 2× Spice Herb | +15% ATK, immune to Freeze |
-| Frost Sorbet | 1× Frost Jewel, 1× Oran Berry | +15% DEF, immune to Burn |
-| Revive Broth | 1× Oran Bark, 1× Herb Bundle | Auto-revive once on death |
-| Lucky Pudding | 1× Honey, 2× Sweet Herb | +10% gold & item drop rate |
-| Stamina Rice | 3× Grain, 1× Herb Bundle | Hunger drains 30% slower |
-
-- Recipes are **discovered** by experimenting (combining unknown ingredients) or found
-  as dungeon loot (Recipe Scrolls)
-- A **Cookbook** UI tab tracks discovered vs. undiscovered recipes
-- Meals expire after one dungeon run; up to 2 meals can be active simultaneously
+- **Kitchen** at Herbalist Hut: press E to cycle between buy/cook modes
+- 6 recipes: Hearty Stew (+20% max HP), Ember Curry (+15% ATK, freeze immune),
+  Frost Sorbet (+15% DEF, burn immune), Revive Broth (auto-revive), Lucky Pudding (+10% gold),
+  Stamina Rice (-30% hunger drain)
+- Up to 2 active meal buffs; consumed on dungeon return
+- Recipes use dungeon materials (mushroom, meat_chunk, spice_herb, etc.)
 
 ### Crafting System
-- **Workbench** building (requires 8× Wood, 4× Iron Ore) unlocks consumable crafting
-- Craft items from dungeon materials without needing to find them as drops:
-
-| Item | Materials | Effect |
-|------|-----------|--------|
-| Antidote Potion | 2× Herb Bundle, 1× Slime Gel | Cures Poison + Burn |
-| Flash Bomb | 1× Flame Shard, 2× Stone | Blinds all enemies in room |
-| Escape Rope | 3× Bat Wing, 2× Vine | Instant dungeon exit, keeps loot |
-| Spike Trap | 2× Iron Ore, 1× Stone | Placeable trap tile |
-| Friend Orb | 1× Monster Core, 2× Moonstone | Guaranteed capture attempt |
-| Stamina Seed | 2× Grain, 1× Oran Bark | Permanently +5 max hunger |
-
-- Crafting recipes are unlocked via the Workbench by discovering materials or finding
-  **Blueprint** items in dungeons
-- Higher-tier Workbench upgrades (Lv2: +10× Steel) unlock advanced recipes
+- **Workbench** at Forge: press E to browse and craft from 7 blueprints
+- Craft potions, orbs, and consumables from materials without finding them as drops
+- Blueprints: Antidote Potion, Flash Bomb, Escape Rope, Heal Salve, Stamina Brew, Spike Kit, Freeze Powder
 
 ### Farming / Garden
-- **Garden Patch** building (requires 5× Wood, 5× Seed Bag) lets the player grow ingredients
-- Plant seeds found in dungeons; crops grow over a set number of dungeon runs ("days")
-- Crops: Oran Berry (3 days), Herb Bundle (2 days), Sweet Herb (4 days), Grain (2 days)
-- Watering (interact with patch before a run) speeds growth by 1 day
-- Fully grown crops are harvested automatically on return from the dungeon
-- The **Composter** upgrade converts excess crops into Fertilizer, further speeding growth
+- **Garden Patch** tile (12,17) in town: press E to cycle plant/water/harvest
+- 5 crop types: Oran Berry (3d), Herb Bundle (2d), Sweet Herb (4d), Grain (2d), Mushroom (2d)
+- Watering doubles growth speed (2 days per advance instead of 1)
+- Season bonus: crops matching current season grow +1 extra day
+- 4-plot capacity; harvested items go directly to inventory
 
-### Daily / Seasonal Cycle
-- Each completed dungeon run advances the in-game **day counter**
-- Every 7 days is a new **week**; every 28 days is a new **season** (Spring/Summer/Autumn/Winter)
-- Seasonal effects:
-  - **Spring**: herb crops grow 1 day faster; monsters drop extra Herb Bundle
-  - **Summer**: Flame-type enemies +10% ATK; fire-immune food ingredients spawn more often
-  - **Autumn**: gold drops +10%; Lucky Pudding buff doubled
-  - **Winter**: Frost-type enemies +10% ATK; hunger drains 20% faster in dungeons
-- Seasonal festivals (day 14 & 28 each season) unlock limited-time shop stock and
-  special dungeon events
-
-### Life Sim Social Loop
-- Each "day" NPCs in town have new dialogue reflecting world events (new building built,
-  season change, recent dungeon event)
-- Gifting cooked meals to companions (Phase 10) counts as a high-value affection action
-- Seasonal festivals allow gift-giving to all town NPCs for small affection/reputation boosts
-- **Town Reputation** meter (0–100): raised by building, gifting, and completing bounties;
-  unlocks NPC discounts and new dialogue branches
+### Calendar System
+- Day counter advances each time the player returns from a dungeon run
+- 4 seasons (Spring/Summer/Autumn/Winter), 28 days each
+- Seasonal effects: Spring herbs grow faster, Summer fire enemies stronger,
+  Autumn gold bonus, Winter hunger drain increase
+- HUD displays current day and season
 
 ### Implementation Notes
-- `world/kitchen.py`: new module, `Recipe` dataclass, cooking interface, meal buff tracker
-- `world/workbench.py`: `Blueprint` dataclass, crafting queue, recipe unlock logic
-- `world/garden.py`: `Crop` dataclass, growth tick system, harvest logic
-- `game/calendar.py`: day/week/season counter, seasonal effect application
-- `data/recipes/cooking.json`: all cooking recipes, ingredients, buff definitions
-- `data/recipes/crafting.json`: all crafting blueprints, material costs
-- `data/crops.json`: crop types, growth times, seasonal modifiers
-- `ui/kitchen_screen.py`: recipe browser, cook interface, active meal display
-- `ui/workbench_screen.py`: blueprint list, craft interface
-- `ui/garden_screen.py`: patch grid, crop status, water/harvest actions
-- `game/save_manager.py`: persist meal buffs, crop state, day counter, town reputation
+- `world/kitchen.py`: `CookingRecipe`, `MealBuff`, `load_recipes`, `can_cook`, `cook`
+- `world/workbench.py`: `CraftingBlueprint`, `load_blueprints`, `can_craft`, `craft`
+- `world/garden.py`: `CropPlot`, `load_crop_definitions`, `get_crop_defs`, `create_plot`, `harvest_plot`, `water_plot`
+- `game/calendar.py`: `Calendar`, `SEASONS`, `SEASON_EFFECTS`, day/week/season tracking
+- `data/recipes/cooking.json`: 6 cooking recipes with buff definitions
+- `data/recipes/crafting.json`: 7 crafting blueprints with material costs
+- `data/crops.json`: 5 crop types with growth times and season bonuses
+- `game/save_manager.py`: persist `calendar`, `garden_plots`
+- `ui/hud.py`: day/season display, active meal buff list
+- `entities/items.py`: 10 new ingredient/crafting items
+- `game/app.py`: `_herbalist_action` (buy/cook toggle), `_crafting_action`,
+  `_garden_action` (plant/water/harvest), `_apply_meal_buffs`, `_advance_garden`
+- 22 new tests covering calendar, kitchen, workbench, and garden systems
 
 ---
 
 ## 🔜 Phase 10 – Romanceable Companions
 
-**Goal**: 3–5 unique companions who join the player's party, develop relationships,
+---
+
+## ✅ Phase 10 – Romanceable Companions
+
+**Goal**: 5 unique companions who join the player's party, develop relationships,
 and have narrative arcs. Inspired by Persona Q social links, Stardew Valley romance,
 and Fire Emblem support conversations.
 
-### Companion Roster (draft)
+### Companion Roster
 | Name | Class | Specialty | Personality |
 |------|-------|-----------|-------------|
-| **Lyra** | Mage | Elemental orbs, long range | Bookish, secretly adventurous |
-| **Brom** | Knight | Tanking, adjacent enemy taunt | Gruff but loyal, hates slimes |
-| **Mira** | Healer | AOE heal, status cure | Optimistic, collects monster lore |
-| **Sable** | Rogue | High crit, trap disarm, steal | Mysterious, dry wit |
-| **Finn** | Ranger | Ranged attack, scouting, fog reveal | Earnest, loves rare items |
+| **Lyra** | Mage | High ATK, ice affinity | Bookish, secretly adventurous |
+| **Brom** | Knight | Tank, high HP | Gruff but loyal, hates slimes |
+| **Mira** | Healer | Low ATK, supportive | Optimistic, collects monster lore |
+| **Sable** | Rogue | High ATK, stealth | Mysterious, dry wit |
+| **Finn** | Ranger | Balanced, scouting | Earnest, loves rare items |
 
 ### Companion Mechanics
-- Companions travel the dungeon with the player as AI-controlled allies
-- Each occupies a turn slot (move/attack/skill/wait) after the player's turn
-- Can be directed with simple commands: Attack/Follow/Hold/Retreat
-- Companion HP persists between floors (no full restore — manage carefully)
-- If a companion is defeated they retreat to town (not permadeath)
+- **Companion tile** in town (purple, position 17,17): press E to deploy/recall
+- Up to **2 companions** deployed at once; they follow the player in dungeons
+- Companions act on their own turn after enemies (CompanionAI system)
+- AI: attacks nearest enemy, moves toward player if no enemies nearby, waits at low HP
+- If defeated, companion retreats to town (not permadeath)
 
-### Relationship System (Persona Q / FE inspired)
+### Relationship System
 - **Affection meter** (0–100) per companion, raised by:
-  - Gifting items they like (each companion has preferred item types)
-  - Rescuing them when near-death
-  - Talking at the Inn (costs one "rest turn")
-  - Completing companion-specific dungeon events
-- **Support Ranks**: C → B → A → S (romance)
-  - Each rank unlocks a cutscene/dialogue event and a passive bonus
-  - S-rank: partner ability (unique combined skill usable once per floor)
-
-### Romance Flags
-- Each companion has a romance route unlocked at A-rank
-- Player chooses to pursue or remain as friends at A-rank conversation
-- S-rank romance grants flavor changes: companion calls player by nickname,
-  unique color highlight on their HUD portrait, special ending slide
+  - Gifting preferred items (+8), neutral items (+2), disliked items (-3)
+  - Talking at the Inn (+3/day, once per day per companion)
+  - Duplicate gift penalty (-2 from second gift of same type same day)
+- **Support Ranks**: C → B → A → S at thresholds 0/25/55/85 affection
+- Romance flag unlocked at S-rank
 
 ### Implementation Notes
-- `entities/companion.py`: `Companion(Entity)` with affection, support_rank, dialogue_key
-- `data/companions/lyra.json` etc.: stat profiles, gift preferences, dialogue trees
-- `ui/companion_screen.py`: affection display, talk option, gift interface
-- `systems/companion_ai.py`: turn resolution for up to 2 active companions
-- `game/save_manager.py`: persist affection values, support ranks, romance flags
+- `entities/companion.py`: `Companion` class with affection, support_rank, gift/talk/deploy logic
+- `data/companions/*.json`: 5 companion definitions with stat profiles and gift preferences
+- `systems/companion_ai.py`: `CompanionAI` — turn resolution for deployed companions
+- `ui/companion_screen.py`: Companion overlay (C key) showing roster, ranks, affection bars
+- `game/save_manager.py`: persist `companions` list and `active_companions` set
+- `game/app.py`: companion tile, deploy/recall via E, C key screen, dungeon deployment
+- `entities/player.py`: `companions` roster, `active_companions` set
+- 4 new tests covering companion data loading and support rank progression
 
 ---
 
-## 🔜 Phase 11 – Monster Collecting
+## ✅ Phase 11 – Menu System & UI Overhaul
+
+**Goal**: Replace bare-bones HUD with a full menu system: title screen, pause menu,
+inventory screen, death screen, and visual health bars. Inspired by Persona Q menus,
+PMD screen layout, and Stardew Valley UI polish.
+
+### Menu System
+- **Main Menu** (title screen): New Game, Continue (if save exists), Options, Exit
+  - Animated title text with shadow, version number, hover effects on buttons
+- **Pause Menu** (Escape): Resume, Inventory, Skills, Save, Quit to Title
+  - Semi-transparent overlay, hover-highlighted buttons
+- **Inventory Screen** (Pause → Inventory): Full item list with selection, description,
+  and actions (Use/Equip/Drop)
+- **Death Screen**: "DEFEATED" overlay with Rescue (return to town, lose 10% gold + half hunger)
+  or Quit to Title
+- **Health Bar Widget**: Reusable visual bar component for HP, hunger, XP, etc.
+
+### Input Routing
+- Menu state machine: `MENU_NONE`, `MENU_MAIN`, `MENU_PAUSE`, `MENU_INVENTORY`, `MENU_DEATH`
+- All gameplay inputs (movement, skills, items, actions) blocked when menu is open
+- Escape toggles pause, arrow keys navigate inventory, Enter confirms
+- New Game resets player/enemies/companions; Continue loads from save
+
+### Implementation Notes
+- `ui/main_menu.py`: `MainMenu` with DirectButton menu items, hover effects, save detection
+- `ui/pause_menu.py`: `PauseMenu` with Resume/Inventory/Save/Quit buttons
+- `ui/inventory_screen.py`: `InventoryScreen` with item list, detail text, navigation
+- `ui/death_screen.py`: `DeathScreen` with rescue penalty and quit options
+- `ui/health_bar.py`: `HealthBar` reusable widget with fill frame and label
+- `game/app.py`: Menu state machine, input guards, menu callbacks, New Game/Continue flow
+- All 86 existing tests pass
+
+---
+
+## 🔜 Phase 12 – Monster Collecting
 
 **Goal**: Defeat or befriend dungeon monsters, add them to a roster, deploy them as
 dungeon allies or town Ranch residents. Inspired by PMD partner system, Pokemon,
@@ -286,7 +298,151 @@ and Digimon Story.
 
 ---
 
-## 🔜 Phase 12 – Integration & Endgame
+## ✅ Phase 12 – Monster Collecting & Ranch
+
+**Goal**: Defeat or befriend dungeon monsters, add them to a roster, deploy them as
+dungeon allies or town Ranch residents. Inspired by PMD partner system, Pokemon,
+and Digimon Story.
+
+### Capture Mechanics
+- When an enemy drops to ≤25% HP, the player can attempt to befriend them
+- Success chance: base 15% + HP bonus (up to +10% at 0 HP) + level diff (+5% per level)
+  + Friend Orb (+50%)
+- Bosses cannot be captured
+- **Friend Orb** (rare dungeon item): guarantees +50% capture chance
+
+### Monster Roster
+- Up to **30 captured monsters** stored in the Ranch
+- Each monster retains: type, name, level, HP, ATK, XP
+- Monsters level up when deployed to the dungeon (+2 HP, +1 ATK per level)
+
+### Evolution System
+- 5 evolution paths defined in `data/monsters/evolutions.json`:
+  - slime (Lv10 + Slime Crown) → king_slime (+15 HP, +5 ATK)
+  - goblin (Lv12 + War Drum) → hobgoblin (+10 HP, +8 ATK)
+  - bat (Lv8 + Moon Wing) → vampire_bat (+5 HP, +4 ATK)
+  - ghost (Lv15, no item) → wraith (+10 HP, +6 ATK)
+  - ice_wisp (Lv12 + Frost Core) → blizzard_spirit (+8 HP, +7 ATK)
+
+### Deployment
+- Up to **2 monsters** deployed alongside 2 companions in dungeons
+- Monsters act on their own turn using AI (attack nearest, follow player)
+- Monsters that die retreat to Ranch (not permadeath)
+
+### Ranch Mini-Game
+- Monsters at the Ranch passively generate their drop materials each day
+- Feeds into the town building material economy (Phase 8)
+
+### Implementation Notes
+- `entities/monster_roster.py`: `CapturedMonster` with XP/leveling/evolution/AI,
+  `MonsterRoster` with 30-slot cap, passive material production, full serialization
+- `systems/capture_system.py`: `calculate_capture_chance`, `attempt_capture`
+- `data/monsters/evolutions.json`: 5 evolution paths with stat bonuses
+- `ui/ranch_screen.py`: roster view, deploy toggle, evolution trigger
+- `world/dungeon_generator.py` + `world/tilemap.py`: `TILE_RANCH` (cyan)
+- `entities/items.py`: Friend Orb, Slime Crown, War Drum, Moon Wing, Frost Core
+- `game/save_manager.py`: persist `MonsterRoster` state
+- `game/app.py`: Ranch tile placement, RanchScreen integration, deploy/evolve handlers
+- 22 new tests covering capture logic, roster management, and evolution triggers
+
+---
+
+## ✅ Phase 13 – Integration & Endgame
+
+**Goal**: Tie all systems together with infinite dungeon scaling, New Game+,
+a multi-phase final boss, and legendary random events. Inspired by PMD post-game,
+Binding of Isaac endless mode, and roguelike scoring.
+
+### Endless Dungeon (Floor 20+)
+- Difficulty scales linearly past floor 20: +8% enemy stats per floor
+- **Legendary Events** (10% chance per floor):
+  - **Blizzard**: Enemies move slower but deal +20% damage (3 floors)
+  - **Golden Floor**: All items rare+, gold doubled (1 floor)
+  - **Monster Stampede**: +50% more spawns (2 floors)
+  - **Darkness**: Visibility reduced to 3 tiles (2 floors)
+  - **Blessing**: Full HP/PP restore (instant)
+- High score tracking: `floor × 100 + gold/2 + kills × 10`
+
+### New Game+
+- Unlocked after defeating the final boss
+- Carries forward: monster roster, companion bonds, materials
+- Difficulty multiplier: +25% per NG+ level
+- New Game+ button appears on title screen when save exists
+
+### Final Boss: The Abyssal King
+- Triggers at floor 25 with a dramatic spawn
+- **3 phases** with escalating difficulty:
+  - Phase 1: The Guardian (150 HP, 15 ATK, Shadow Claw/Giga Impact)
+  - Phase 2: The Fury (100 HP, 20 ATK, adds Toxic/Thunder)
+  - Phase 3: The Despair (60 HP, 25 ATK, adds Sleep Powder)
+- Visual changes per phase (purple → red → void)
+- Victory rewards: 500 gold, 200 XP, Abyssal Crown unique item
+- Unlocks NG+ on defeat
+
+### Implementation Notes
+- `systems/endless_dungeon.py`: `EndlessDungeon` with scaling, events, high score
+- `systems/new_game_plus.py`: `NGPlusState`, `prepare_ngp`, `apply_ngp`
+- `entities/boss.py`: `FinalBoss` with multi-phase combat, visual updates
+- `data/bosses/final_boss.json`: boss stats, phases, rewards
+- `ui/main_menu.py`: Added "New Game+" button
+- `game/save_manager.py`: persist `endless_dungeon`, `ngp_state`
+- `game/app.py`: boss spawn/defeat flow, NG+ reset, event messages in `next_floor`
+- 15 new tests covering endless scaling, events, NG+ state, and boss data
+
+---
+
+## ✅ Phase 15 – Life Sim & Visual Polish
+
+**Goal**: Transform the town into a living world inspired by Story of Seasons and Fantasy Life.
+NPCs with daily schedules, a customizable home, seasonal festivals, and PSP/3DS-quality
+ambient visuals.
+
+### NPC System
+- **4 unique NPCs**: Mayor Elric, Merchant Lina, Blacksmith Grom, Librarian Sage, Farmer Bramble
+- **Daily schedules**: Each NPC moves through 5-6 locations throughout the day
+- **Gift system**: Preferred (+10), neutral (+3), disliked (-5) gifts; once per day
+- **Dialogue trees**: 5+ lines per NPC scaling with affection level
+- **Talk/gift interactions**: T key to talk, G key to gift nearby NPCs
+
+### Player Home
+- **Furniture placement**: 8 furniture types (bed, table, shelf, rug, lantern, plant, chest, trophy)
+- **Grid-based layout** with overlap detection
+- **Storage chest**: Extra item and material storage beyond inventory
+- **3D interior**: Floor, walls, and furniture rendered as 3D geometry
+- **Boss trophy**: Unlocked after defeating the Abyssal King
+
+### Seasonal Festivals
+- **6 festivals** across all seasons: Spring Bloom, Summer Fair, Harvest Moon,
+  Starlight Night, Snow Festival, New Year's Eve
+- **Auto-triggered** on specific calendar days
+- **Rewards**: Gold, XP, and unique items
+- **Persistent tracking**: Completed festivals saved across runs
+
+### Visual Polish
+- **Particle systems**: Fireflies (summer), falling leaves (autumn), snow (winter),
+  rain, torch sparks, dust motes — all procedural billboard particles with recycling
+- **Post-processing**: Bloom, vignette, color temperature, seasonal color grading
+- **Seasonal atmosphere**: Each season gets unique particle + color grade combination
+
+### Controls
+- **H**: Enter/exit player house
+- **T**: Talk to nearby NPC
+- **G**: Gift item to nearby NPC
+
+### Implementation Notes
+- `render/particles.py`: `ParticleSystem` with 6 types (Firefly, Leaf, Snow, Rain, Torch, Dust)
+- `render/post_process.py`: `PostProcess` with bloom, vignette, seasonal color grading
+- `systems/npc_schedule.py`: `NPC` with schedule, dialogue, gift system, 3D model rendering
+- `systems/home_system.py`: `HomeSystem` with furniture placement, storage, 3D interior
+- `systems/festivals.py`: `FestivalSystem` with 6 seasonal events and reward tracking
+- `data/npcs/*.json`: 5 NPC definitions with schedules, gifts, dialogue trees
+- `game/app.py`: NPC rendering, schedule updates, festival checks, home/talk/gift handlers
+- `game/save_manager.py`: Persist home, festivals, NPC affection
+- 25 new tests covering NPCs, home, and festivals
+
+---
+
+## 🔜 Phase 16 – Multiplayer & Online Features
 
 - **Infinite dungeon mode**: floors 20+ with all systems active, leaderboard score
 - **New Game+**: carry forward monster roster and companion bonds; dungeons harder

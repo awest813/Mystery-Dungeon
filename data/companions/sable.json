@@ -1,0 +1,12 @@
+{
+  "id": "sable",
+  "name": "Sable",
+  "role": "Rogue",
+  "max_hp": 22,
+  "attack_power": 7,
+  "xp_value": 9,
+  "preferred_items": ["bat_wing", "dark_crystal", "dungeon_key"],
+  "disliked_items": ["grain", "sweet_herb"],
+  "description": "A mysterious rogue with a dry wit and sharp blades.",
+  "personality": "Mysterious, sarcastic, loyal"
+}

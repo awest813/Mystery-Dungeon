@@ -1,0 +1,29 @@
+{
+  "id": "librarian_sage",
+  "name": "Librarian Sage",
+  "role": "Librarian",
+  "color": [0.4, 0.5, 0.8, 1],
+  "model_type": "ghost",
+  "schedule": [
+    {"hour": 8, "x": 16, "y": 13, "activity": "working", "dialogue": "The archives hold many secrets."},
+    {"hour": 11, "x": 16, "y": 13, "activity": "working", "dialogue": "I've been researching ancient dungeon lore."},
+    {"hour": 15, "x": 15, "y": 13, "activity": "idle", "dialogue": "A walk among the shelves clears the mind."},
+    {"hour": 18, "x": 16, "y": 13, "activity": "working", "dialogue": "The evening light is perfect for reading."},
+    {"hour": 21, "x": 16, "y": 13, "activity": "sleeping", "dialogue": "The books whisper goodnight."}
+  ],
+  "preferred_gifts": ["moonstone", "dark_crystal", "herb_bundle"],
+  "disliked_gifts": ["meat_chunk", "vine"],
+  "dialogues": {
+    "default": [
+      "Welcome to the archives. Knowledge is power.",
+      "I've been cataloging monster behaviors from your expeditions.",
+      "The dungeon holds secrets older than the town itself.",
+      "Your adventures make for fascinating historical records.",
+      "I believe you'll find what you seek in the deepest floors."
+    ],
+    "lore": [
+      "The Abyssal King was sealed away centuries ago...",
+      "Legend says the dungeon itself is a living entity."
+    ]
+  }
+}

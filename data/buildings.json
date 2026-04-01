@@ -11,7 +11,7 @@
     {
       "id": "forge_lv2",
       "name": "Forge (Lv2)",
-      "description": "Elemental infusions (use with the forge tile).",
+      "description": "Elemental infusions — reduced material costs at the forge.",
       "requires": ["forge_lv1"],
       "materials": { "iron_ore": 15, "flame_shard": 5 },
       "gold": 100
@@ -19,7 +19,7 @@
     {
       "id": "herbalist_hut",
       "name": "Herbalist Hut",
-      "description": "Herb stock between runs (expanded in Phase 9).",
+      "description": "Buy potions and food with gold. Press E to browse stock.",
       "requires": [],
       "materials": { "bat_wing": 6, "goblin_fang": 4 },
       "gold": 50
@@ -27,7 +27,7 @@
     {
       "id": "inn",
       "name": "Inn",
-      "description": "Rest services and future companions.",
+      "description": "Rest well — gain a temporary HP boost for your next dungeon run.",
       "requires": [],
       "materials": { "bat_wing": 8, "iron_ore": 5 },
       "gold": 80
@@ -35,7 +35,7 @@
     {
       "id": "shrine",
       "name": "Shrine",
-      "description": "Curse relief and blessings (planned).",
+      "description": "Purify cursed weapons or bless them with new affixes. Press E for services.",
       "requires": [],
       "materials": { "moonstone": 5, "frost_jewel": 3 },
       "gold": 120
@@ -43,7 +43,7 @@
     {
       "id": "guild_hall",
       "name": "Guild Hall",
-      "description": "Bounties and daily challenges (planned).",
+      "description": "Accept bounties for bonus gold and XP rewards. Press E for bounty board.",
       "requires": [],
       "materials": { "iron_ore": 15, "dark_crystal": 5 },
       "gold": 200

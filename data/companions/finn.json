@@ -1,0 +1,12 @@
+{
+  "id": "finn",
+  "name": "Finn",
+  "role": "Ranger",
+  "max_hp": 24,
+  "attack_power": 5,
+  "xp_value": 7,
+  "preferred_items": ["vine", "apple", "big_apple"],
+  "disliked_items": ["dark_crystal", "frost_jewel"],
+  "description": "An earnest ranger who loves rare items and scouting ahead.",
+  "personality": "Earnest, adventurous, optimistic"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "blacksmith_grom",
+  "name": "Blacksmith Grom",
+  "role": "Blacksmith",
+  "color": [0.7, 0.4, 0.2, 1],
+  "model_type": "orc",
+  "schedule": [
+    {"hour": 6, "x": 13, "y": 12, "activity": "working", "dialogue": "The forge is lit. Time to work."},
+    {"hour": 10, "x": 13, "y": 12, "activity": "working", "dialogue": "This blade needs more hammering."},
+    {"hour": 14, "x": 14, "y": 12, "activity": "idle", "dialogue": "Break time. The fire keeps me warm."},
+    {"hour": 17, "x": 13, "y": 12, "activity": "working", "dialogue": "Almost done with this order."},
+    {"hour": 20, "x": 13, "y": 12, "activity": "sleeping", "dialogue": "Forge is cold. See you at dawn."}
+  ],
+  "preferred_gifts": ["iron_ore", "flame_shard", "meat_chunk"],
+  "disliked_gifts": ["frost_jewel", "sweet_herb"],
+  "dialogues": {
+    "default": [
+      "Grom. I make weapons.",
+      "Bring me good materials, I make good blades.",
+      "Your sword has seen much battle. It's well-cared for.",
+      "The forge and I have an understanding. We both serve the town.",
+      "You fight with honor. Your weapons should reflect that."
+    ],
+    "forge": [
+      "I can reinforce your weapon if you bring the materials.",
+      "The fire speaks to me. It tells me what the steel needs."
+    ]
+  }
+}

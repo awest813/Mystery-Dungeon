@@ -3,11 +3,14 @@ from world.dungeon_generator import TRAP_TYPES
 
 
 class TurnSystem:
-    def __init__(self, player, enemies, tilemap, log_callback=None):
+    def __init__(self, player, enemies, tilemap, log_callback=None, kill_callback=None,
+                 post_enemy_callback=None):
         self.player = player
         self.enemies = enemies
         self.tilemap = tilemap
         self.log_callback = log_callback if log_callback else print
+        self.kill_callback = kill_callback
+        self.post_enemy_callback = post_enemy_callback
         self.is_player_turn = True
 
     # ------------------------------------------------------------------ #
@@ -115,6 +118,8 @@ class TurnSystem:
 
         if enemy.is_dead:
             self.log_callback(f"Defeated {enemy.name}!")
+            if self.kill_callback:
+                self.kill_callback(enemy)
             leveled = self.player.add_xp(enemy.xp_value)
             if leveled:
                 self.log_callback(f"Level UP! Now Lv.{self.player.level} | HP+5 ATK+1")
@@ -181,6 +186,8 @@ class TurnSystem:
 
         if best_enemy.is_dead:
             self.log_callback(f"Defeated {best_enemy.name}!")
+            if self.kill_callback:
+                self.kill_callback(best_enemy)
             leveled = self.player.add_xp(best_enemy.xp_value)
             if leveled:
                 self.log_callback(f"Level UP! Now Lv.{self.player.level}!")
@@ -297,3 +304,6 @@ class TurnSystem:
 
         if self.player.is_dead:
             self.log_callback("DEFEATED. Rescued to Town...")
+
+        if self.post_enemy_callback:
+            self.post_enemy_callback()

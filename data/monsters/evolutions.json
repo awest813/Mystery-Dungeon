@@ -1,0 +1,44 @@
+{
+  "evolutions": [
+    {
+      "base_type": "slime",
+      "evolved_type": "king_slime",
+      "level_req": 10,
+      "item_req": "slime_crown",
+      "stat_bonuses": {"max_hp": 15, "attack_power": 5},
+      "new_skill": "Bounce"
+    },
+    {
+      "base_type": "goblin",
+      "evolved_type": "hobgoblin",
+      "level_req": 12,
+      "item_req": "war_drum",
+      "stat_bonuses": {"max_hp": 10, "attack_power": 8},
+      "new_skill": "Double Attack"
+    },
+    {
+      "base_type": "bat",
+      "evolved_type": "vampire_bat",
+      "level_req": 8,
+      "item_req": "moon_wing",
+      "stat_bonuses": {"max_hp": 5, "attack_power": 4},
+      "new_skill": "Leech Life"
+    },
+    {
+      "base_type": "ghost",
+      "evolved_type": "wraith",
+      "level_req": 15,
+      "item_req": null,
+      "stat_bonuses": {"max_hp": 10, "attack_power": 6},
+      "new_skill": "Phase"
+    },
+    {
+      "base_type": "ice_wisp",
+      "evolved_type": "blizzard_spirit",
+      "level_req": 12,
+      "item_req": "frost_core",
+      "stat_bonuses": {"max_hp": 8, "attack_power": 7},
+      "new_skill": "Blizzard"
+    }
+  ]
+}
